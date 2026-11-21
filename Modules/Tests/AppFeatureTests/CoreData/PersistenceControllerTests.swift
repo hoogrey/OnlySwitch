@@ -1,4 +1,5 @@
 import CoreData
+import Extensions
 import Foundation
 import OnlySwitchPersistence
 import Testing
@@ -6,6 +7,89 @@ import Testing
 
 @MainActor
 struct PersistenceControllerTests {
+    @Test("The standalone store persists across launches and leaves the official legacy store intact")
+    func localStoreUsesItsOwnApplicationSupportDirectory() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legacy = root.appendingPathComponent("legacy.sqlite")
+        let destination = root.appendingPathComponent("OnlySwitchLocal/onlyswitch.sqlite")
+        let model = makeModel()
+        try seedStore(at: legacy, model: model, value: "official")
+        func openLocal() -> PersistenceController {
+            PersistenceController(
+                legacyStoreURL: legacy, managedObjectModel: model,
+                configuration: AppBuildConfiguration(isLocal: true), applicationSupportURL: root
+            )
+        }
+
+        let first = openLocal()
+        try first.requireStore()
+        let store = try #require(first.container.persistentStoreCoordinator.persistentStores.first)
+        #expect(store.url?.standardizedFileURL == destination.standardizedFileURL)
+        #expect(try values(in: first.container.viewContext).isEmpty)
+        try insert("local", into: first.container.viewContext)
+        try close(first)
+
+        let reopened = openLocal()
+        try reopened.requireStore()
+        #expect(try values(in: reopened.container.viewContext) == ["local"])
+        try close(reopened)
+        #expect(try readStore(at: legacy, model: model) == ["official"])
+    }
+
+    @Test("Failure to create the standalone directory leaves no loaded store")
+    func localDirectoryCreationFailureIsReported() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let blocker = root.appendingPathComponent("OnlySwitchLocal")
+        let original = Data("blocks local store creation".utf8)
+        try original.write(to: blocker)
+
+        let controller = PersistenceController(
+            managedObjectModel: makeModel(),
+            configuration: AppBuildConfiguration(isLocal: true), applicationSupportURL: root
+        )
+        #expect(controller.loadError != nil)
+        #expect(controller.container.persistentStoreCoordinator.persistentStores.isEmpty)
+        #expect(try Data(contentsOf: blocker) == original)
+    }
+
+    @Test("The standalone in-memory store takes precedence over all disk locations")
+    func localInMemoryStoreIgnoresDiskLocations() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let destination = root.appendingPathComponent("injected.sqlite")
+        let controller = PersistenceController(
+            inMemory: true, storeURL: destination, managedObjectModel: makeModel(),
+            configuration: AppBuildConfiguration(isLocal: true), applicationSupportURL: root
+        )
+        try controller.requireStore()
+        let store = try #require(controller.container.persistentStoreCoordinator.persistentStores.first)
+        #expect(store.type == NSInMemoryStoreType)
+        try insert("ephemeral", into: controller.container.viewContext)
+        try close(controller)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).isEmpty)
+    }
+
+    @Test("An injected standalone store takes precedence over its default path")
+    func localStoreHonorsInjectedDestination() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = makeModel()
+        let destination = root.appendingPathComponent("injected/alternate.sqlite")
+        let controller = PersistenceController(
+            storeURL: destination, managedObjectModel: model,
+            configuration: AppBuildConfiguration(isLocal: true), applicationSupportURL: root
+        )
+        try controller.requireStore()
+        let store = try #require(controller.container.persistentStoreCoordinator.persistentStores.first)
+        #expect(store.url?.standardizedFileURL == destination.standardizedFileURL)
+        try insert("injected", into: controller.container.viewContext)
+        try close(controller)
+        #expect(try readStore(at: destination, model: model) == ["injected"])
+        #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("OnlySwitchLocal").path))
+    }
+
     @Test("In-memory persistence never creates a SQLite database")
     func inMemoryStoreDoesNotTouchDisk() throws {
         let directory = try temporaryDirectory()

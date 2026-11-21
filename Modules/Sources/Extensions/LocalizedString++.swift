@@ -16,7 +16,7 @@ public extension Bundle {
     }
 
     private static var languageUserDefaults: UserDefaults? {
-        UserDefaults(suiteName: "\(appIdentifier)OnlySwitch.shared")
+        AppBuildConfiguration.current.sharedDefaults(appIdentifierPrefix: appIdentifier)
     }
     private static let supportLangs = ["en", "zh", "de", "hr", "tr", "pl", "fil", "nl", "it", "ru", "es", "ja", "so", "kr", "fr", "uk", "sk", "pt-BR", "cs"]
 

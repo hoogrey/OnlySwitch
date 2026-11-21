@@ -6,6 +6,7 @@
 import AppKit
 import Dependencies
 import DependenciesMacros
+import Extensions
 import Foundation
 import ServiceManagement
 import PrivilegedHelperCore
@@ -60,7 +61,21 @@ extension DependencyValues {
 
 extension PrivilegedOperationClient {
     static var live: Self {
-        Self(
+        live(configuration: .current)
+    }
+
+    static func live(configuration: AppBuildConfiguration) -> Self {
+        guard !configuration.isLocal else {
+            // Supply the closures explicitly so the macro's unimplemented stubs are never called.
+            return Self(
+                status: { .unavailable },
+                installFromInteractiveUI: { throw PrivilegedOperationClientError.unavailable },
+                removeFromInteractiveUI: { throw PrivilegedOperationClientError.unavailable },
+                perform: { _, _ in throw PrivilegedOperationClientError.unavailable },
+                openSystemSettings: {}
+            )
+        }
+        return Self(
             status: {
                 PrivilegedHelperStatus(serviceStatus: helperServiceStatus())
             },

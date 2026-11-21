@@ -1,3 +1,4 @@
+import Extensions
 import Foundation
 import os
 import RemoteCore
@@ -62,7 +63,7 @@ actor RemoteCredentialStore {
         }
     }
 
-    private static let identityService = "jacklandrin.OnlySwitch.remote.identity"
+    private static let identityService = AppBuildConfiguration.current.keychainService("jacklandrin.OnlySwitch.remote.identity")
     private static let identityAccount = "installation-id"
     static let maximumTransactions = 32
 
@@ -94,7 +95,7 @@ actor RemoteCredentialStore {
     }
 
     static func live(service: String = "jacklandrin.OnlySwitch.remote.devices") -> RemoteCredentialStore {
-        RemoteCredentialStore(backend: .keychain(service: service))
+        RemoteCredentialStore(backend: .keychain(service: AppBuildConfiguration.current.keychainService(service)))
     }
 
     static func inMemory(

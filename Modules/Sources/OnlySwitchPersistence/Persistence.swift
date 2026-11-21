@@ -26,7 +26,9 @@ public struct PersistenceController: Sendable {
         legacyStoreURL: URL? = nil,
         managedObjectModel: NSManagedObjectModel? = nil,
         migratesStore: Bool = true,
-        migrationRetryDelays: [TimeInterval] = [0.2, 0.5, 1]
+        migrationRetryDelays: [TimeInterval] = [0.2, 0.5, 1],
+        configuration: AppBuildConfiguration = .current,
+        applicationSupportURL: URL? = nil
     ) {
         container = NSPersistentContainer(
             name: "OnlySwitch",
@@ -36,7 +38,6 @@ public struct PersistenceController: Sendable {
         viewContext.automaticallyMergesChangesFromParent = true
         viewContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
 
-        let defaultURL = legacyStoreURL ?? container.persistentStoreDescriptions.first?.url
         let destinationURL: URL?
         let description: NSPersistentStoreDescription
         if inMemory {
@@ -44,6 +45,31 @@ public struct PersistenceController: Sendable {
             destinationURL = nil
             description = NSPersistentStoreDescription()
             description.type = NSInMemoryStoreType
+        } else if configuration.isLocal {
+            destinationURL = nil
+            do {
+                let localURL: URL
+                if let storeURL {
+                    localURL = storeURL
+                } else {
+                    let supportURL = try applicationSupportURL ?? FileManager.default.url(
+                        for: .applicationSupportDirectory, in: .userDomainMask,
+                        appropriateFor: nil, create: false
+                    )
+                    localURL = supportURL
+                        .appendingPathComponent("OnlySwitchLocal", isDirectory: true)
+                        .appendingPathComponent("onlyswitch.sqlite")
+                }
+                try FileManager.default.createDirectory(
+                    at: localURL.deletingLastPathComponent(), withIntermediateDirectories: true
+                )
+                description = NSPersistentStoreDescription(url: localURL)
+            } catch {
+                container.persistentStoreDescriptions = []
+                loadError = error as NSError
+                Self.log(error as NSError)
+                return
+            }
         } else {
             let appGroup = "\(Bundle.appIdentifier)OnlySwitch.shared"
             guard let sharedURL = storeURL ?? FileManager.default
@@ -75,6 +101,7 @@ public struct PersistenceController: Sendable {
             destinationURL = sharedURL
             // An existing shared store is authoritative. Never overwrite it with
             // an older legacy store left behind by a previous migration.
+            let defaultURL = legacyStoreURL ?? container.persistentStoreDescriptions.first?.url
             let legacyURL = defaultURL.flatMap { url in
                 FileManager.default.fileExists(atPath: url.path) ? url : nil
             }

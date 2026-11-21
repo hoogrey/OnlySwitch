@@ -34,10 +34,10 @@ enum UpdateProbeResult: Equatable, Sendable {
 /// `CFBundleVersion`, so updates are detected by build number rather than marketing version.
 @MainActor
 final class Updater {
-    static let shared = Updater()
+    static let shared = Updater(configuration: .current)
 
     private let delegate = UpdaterDelegate()
-    private let updaterController: SPUStandardUpdaterController
+    private let updaterController: SPUStandardUpdaterController?
     private var probeContinuations: [CheckedContinuation<UpdateProbeResult, Never>] = []
     private var probeTimeoutTask: Task<Void, Never>?
     private var showWindowAfterProbe = false
@@ -45,7 +45,11 @@ final class Updater {
     /// Safety net in case Sparkle never reports the end of a probe.
     private static let probeTimeout: Duration = .seconds(60)
 
-    private init() {
+    init(configuration: AppBuildConfiguration) {
+        guard !configuration.isLocal else {
+            updaterController = nil
+            return
+        }
         updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: delegate,
@@ -64,6 +68,7 @@ final class Updater {
     }
 
     func showUpdateWindow() {
+        guard let updaterController else { return }
         // Sparkle ignores `checkForUpdates` while a probe session runs; show it once the probe ends.
         guard probeContinuations.isEmpty else {
             showWindowAfterProbe = true
@@ -75,7 +80,7 @@ final class Updater {
 
     /// Silently checks the appcast without showing any UI. Skipped builds are not reported.
     func probeForUpdate() async -> UpdateProbeResult {
-        let updater = updaterController.updater
+        guard let updater = updaterController?.updater else { return .failed }
         if probeContinuations.isEmpty {
             // Sparkle silently ignores the request when the updater failed to start or is busy.
             guard updater.canCheckForUpdates else {

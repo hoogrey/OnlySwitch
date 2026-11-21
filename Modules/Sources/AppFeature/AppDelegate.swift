@@ -136,7 +136,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
 
         // Checks on launch and hourly; each check respects the "Check Updates on Launch" preference.
-        updateCheckScheduler.start()
+        if !AppBuildConfiguration.current.isLocal {
+            updateCheckScheduler.start()
+        }
         // Workaround for issue [#147](https://github.com/jacklandrin/OnlySwitch/issues/147)
         NSApp.setActivationPolicy(.accessory)
 

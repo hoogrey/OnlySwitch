@@ -1,6 +1,7 @@
 #if os(macOS)
 import AppKit
 import Dependencies
+import Extensions
 import ImageIO
 
 /// Every file-system, pasteboard, workspace and system-settings effect of the Screenshots & Record tab. Files are
@@ -57,7 +58,11 @@ extension ScreenshotsClient: DependencyKey {
     public static let liveValue: Self = {
         let home = FileManager.default.homeDirectoryForCurrentUser.resolvingSymlinksInPath()
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? home.appendingPathComponent("Library/Application Support", isDirectory: true)
-        return live(folder: home.appendingPathComponent("Pictures/OnlySwitch Screenshots", isDirectory: true), manifestURL: support.appendingPathComponent("OnlySwitch/Screenshots/library.json"))
+        let directoryName = AppBuildConfiguration.current.isLocal ? "OnlySwitchLocal" : "OnlySwitch"
+        return live(
+            folder: home.appendingPathComponent("Pictures/\(directoryName) Screenshots", isDirectory: true),
+            manifestURL: support.appendingPathComponent("\(directoryName)/Screenshots/library.json")
+        )
     }()
 
     static func live(folder: URL, manifestURL: URL) -> Self {

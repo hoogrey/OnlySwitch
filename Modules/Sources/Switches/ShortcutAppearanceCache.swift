@@ -1,3 +1,4 @@
+import Extensions
 import Foundation
 
 public struct ShortcutAppearance: Codable, Equatable, Sendable {
@@ -41,8 +42,7 @@ public enum ShortcutAppearanceCache {
     }
 
     private static func sharedDefaults() -> UserDefaults? {
-        guard let prefix = Bundle.main.object(forInfoDictionaryKey: "AppIdentifierPrefix") as? String,
-              !prefix.isEmpty else { return nil }
-        return UserDefaults(suiteName: "\(prefix)OnlySwitch.shared")
+        let prefix = Bundle.main.object(forInfoDictionaryKey: "AppIdentifierPrefix") as? String ?? ""
+        return AppBuildConfiguration.current.sharedDefaults(appIdentifierPrefix: prefix, requiresPrefix: true)
     }
 }

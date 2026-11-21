@@ -8,6 +8,7 @@
 import CodexKit
 import Dependencies
 import DependenciesMacros
+import Extensions
 import Foundation
 #if canImport(AppKit)
 import AppKit
@@ -105,7 +106,7 @@ private actor CodexRuntimePool {
     private var runtimes: [String: RuntimeEntry] = [:]
 
     private let defaultModel = "codex-mini-latest"
-    private let secureStoreService = "OnlySwitch.Codex.ChatGPTSession"
+    private let secureStoreService = AppBuildConfiguration.current.keychainService("OnlySwitch.Codex.ChatGPTSession")
     private let secureStoreAccount = "main"
 
     func signIn() async throws -> ChatGPTSession {

@@ -113,12 +113,14 @@ struct OnlySwitchApp: App {
                 })
             }
             SidebarCommands()
-            CommandGroup(after: .appSettings) {
-                Button(action: {
-                    appDelegate.checkUpdate()
-                }, label: {
-                    Text("Check For Update...")
-                })
+            if !AppBuildConfiguration.current.isLocal {
+                CommandGroup(after: .appSettings) {
+                    Button(action: {
+                        appDelegate.checkUpdate()
+                    }, label: {
+                        Text("Check For Update...")
+                    })
+                }
             }
             CommandGroup(replacing: .newItem) {
 

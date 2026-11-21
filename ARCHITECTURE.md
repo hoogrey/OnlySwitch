@@ -229,6 +229,12 @@ Executable discovery accepts the native app CLI (including supported executable-
 
 The shared command runner copies the app environment and sets `TAILSCALE_BE_CLI=1` on the child. This selects CLI mode in the bundled macOS executable when OnlySwitch starts it from a GUI session.
 
+## Local standalone builds
+
+`Extensions.AppBuildConfiguration` reads the opt-in `OnlySwitchLocalMode` Boolean from the running bundle. The local package uses bundle identifier `local.OnlySwitch`, bundle name `OnlySwitchLocal`, and the `onlyswitch-local` URL scheme. Its database lives in Application Support/OnlySwitchLocal, shared preferences use its own standard defaults, and Keychain service names are scoped to the local identity. Local storage never discovers or relocates the official app's legacy or group store. Fixed screenshot and Aphrodite paths are isolated as well; the other app-owned file stores use the local bundle name or identifier.
+
+The local package omits the widget and privileged helper. The local privileged client returns unavailable without consulting or changing the official service; Sparkle is not initialized and update controls are omitted. The official configuration remains the default when the marker is absent. `Scripts/build-local-onlyswitch.sh` builds and signs a staged copy with no original team, group, or Keychain entitlements, and publishes it only after verification. See `doc/local-build.md` for building and migrating supported settings. Credentials require a separate sign-in.
+
 
 ## Sound Mixer EQ
 

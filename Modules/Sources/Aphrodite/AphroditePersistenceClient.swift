@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Extensions
 import Foundation
 
 public extension Notification.Name {
@@ -219,7 +220,10 @@ enum AphroditeBundledSeed {
 
 extension AphroditePersistenceClient: DependencyKey {
     public static let liveValue: Self = {
-        let applicationSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        var applicationSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        if AppBuildConfiguration.current.isLocal {
+            applicationSupport.append(path: "OnlySwitchLocal", directoryHint: .isDirectory)
+        }
         return .fileSystem(directory: applicationSupport.appending(path: "Aphrodite", directoryHint: .isDirectory))
     }()
     public static let testValue = Self()

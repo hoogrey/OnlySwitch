@@ -206,7 +206,7 @@ class GeneralVM: ObservableObject {
 
 extension GeneralVM {
     private static var sharedDefaults: UserDefaults? {
-        UserDefaults(suiteName: "\(Bundle.appIdentifier)OnlySwitch.shared")
+        AppBuildConfiguration.current.sharedDefaults(appIdentifierPrefix: Bundle.appIdentifier)
     }
 
     func exportSettings() {

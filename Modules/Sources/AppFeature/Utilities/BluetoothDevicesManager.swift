@@ -32,7 +32,15 @@ class BluetoothDevicesManager:NSObject, @unchecked Sendable {
     }
     
     var allPairedDevices:[IOBluetoothDevice] {
-        IOBluetoothDevice.pairedDevices().filter{ $0 is IOBluetoothDevice }.map{ $0 as! IOBluetoothDevice }
+        Self.pairedDevices(state: centralManager.state) {
+            IOBluetoothDevice.pairedDevices().compactMap { $0 as? IOBluetoothDevice }
+        }
+    }
+
+    static func pairedDevices<Device>(state: CBManagerState, load: () -> [Device]) -> [Device] {
+        // The synchronous IOBluetooth query can block startup while Bluetooth initializes.
+        guard state == .poweredOn else { return [] }
+        return load()
     }
     
     var allPairedAirpods:[IOBluetoothDevice] {

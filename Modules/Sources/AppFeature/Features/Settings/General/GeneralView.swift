@@ -6,6 +6,7 @@
 //
 
 import Defines
+import Extensions
 import SwiftUI
 import LaunchAtLogin
 import AlertToast
@@ -107,33 +108,35 @@ struct GeneralView: View, EmailProvider {
             }
             
             // MARK: - Updates Section
-            Section {
-                HStack {
-                    Button("Check For Update...".localized()) {
-                        generalVM.checkUpdate()
-                    }
-                    
-                    Spacer()
-                    
-                    if !generalVM.newestVersion.isEmpty {
-                        if generalVM.isTheNewestVersion {
-                            Text("You’re up to date!".localized())
-                                .foregroundColor(.green)
-                        } else {
-                            Text("The latest version is v%@".localizeWithFormat(arguments: generalVM.newestVersion))
-                                .foregroundColor(.red)
+            if !AppBuildConfiguration.current.isLocal {
+                Section {
+                    HStack {
+                        Button("Check For Update...".localized()) {
+                            generalVM.checkUpdate()
                         }
+
+                        Spacer()
+
+                        if !generalVM.newestVersion.isEmpty {
+                            if generalVM.isTheNewestVersion {
+                                Text("You’re up to date!".localized())
+                                    .foregroundColor(.green)
+                            } else {
+                                Text("The latest version is v%@".localizeWithFormat(arguments: generalVM.newestVersion))
+                                    .foregroundColor(.red)
+                            }
+                        }
+
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .controlSize(.small)
+                            .isHidden(!generalVM.showProgress, remove: true)
                     }
-                    
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .controlSize(.small)
-                        .isHidden(!generalVM.showProgress, remove: true)
+
+                    Toggle("Check Updates on Launch".localized(), isOn: $generalVM.checkIfUpdateOnlaunch)
+                } header: {
+                    Text("Updates".localized())
                 }
-                
-                Toggle("Check Updates on Launch".localized(), isOn: $generalVM.checkIfUpdateOnlaunch)
-            } header: {
-                Text("Updates".localized())
             }
             
             // MARK: - Cache Section

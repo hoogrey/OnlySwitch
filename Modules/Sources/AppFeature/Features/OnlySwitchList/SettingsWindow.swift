@@ -89,7 +89,7 @@ class SettingsWindow: NSWindow, NSWindowDelegate {
             makeKeyAndOrderFront(nil)
             makeKey()
         } else {
-            if let url = URL(string: "onlyswitch://SettingsWindow") {
+            if let url = URL(string: "\(AppBuildConfiguration.current.urlScheme)://SettingsWindow") {
                 if #available(macOS 13.3, *) {
                     if !isShowing {
                         NSWorkspace.shared.open(url)

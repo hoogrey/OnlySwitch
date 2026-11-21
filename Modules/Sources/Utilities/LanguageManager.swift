@@ -12,7 +12,7 @@ import OSLog
 
 @MainActor
 public class LanguageManager: ObservableObject {
-    private let languageUserDefaults = UserDefaults(suiteName: "\(Bundle.appIdentifier)OnlySwitch.shared")
+    private let languageUserDefaults = AppBuildConfiguration.current.sharedDefaults(appIdentifierPrefix: Bundle.appIdentifier)
     public static let sharedManager = LanguageManager()
     public var systemLangPriority: Bool {
         get {

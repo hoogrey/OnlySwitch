@@ -19,7 +19,7 @@ public final class KeychainManager {
     private let service: String
     
     public init(service: String) {
-        self.service = service
+        self.service = AppBuildConfiguration.current.keychainService(service)
     }
     
     public func save(key: String, value: String) throws {
