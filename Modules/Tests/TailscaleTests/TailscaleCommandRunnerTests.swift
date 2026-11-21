@@ -6,6 +6,22 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct TailscaleCommandRunnerTests {
+    @Test func forcesCLIModeForTheChild() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        let home = try #require(environment["HOME"])
+        let fixture = try TailscaleProcessFixture(script: #"""
+        printf '%s' "${TAILSCALE_BE_CLI-unset}"
+        printf '%s' "$HOME" >&2
+        """#)
+        defer { fixture.remove() }
+
+        let result = try await TailscaleCommandRunner.run(executable: fixture.executable, arguments: [], timeout: .seconds(2))
+        #expect(result.exitCode == 0)
+        #expect(result.stdout == "1")
+        #expect(result.stderr == home)
+        #expect(ProcessInfo.processInfo.environment["TAILSCALE_BE_CLI"] == environment["TAILSCALE_BE_CLI"])
+    }
+
     @Test func argumentsReachTheChildLiterally() async throws {
         let fixture = try TailscaleProcessFixture(script: #"printf '%s' "$1""#)
         defer { fixture.remove() }

@@ -227,6 +227,8 @@ The feature is local-only: widget discovery, remote catalogs, status lookups and
 
 Executable discovery accepts the native app CLI (including supported executable-name variants) or a native Homebrew binary. Shell launchers without `exec` are not executed. The command deadline covers pipe draining as well as process execution, and termination validates and targets the owned process group so inherited pipes cannot leave an unbounded wait. Cancelling authorization waits for the coordinator’s owned CLI to finish before refreshing the resulting client state.
 
+The shared command runner copies the app environment and sets `TAILSCALE_BE_CLI=1` on the child. This selects CLI mode in the bundled macOS executable when OnlySwitch starts it from a GUI session.
+
 
 ## Sound Mixer EQ
 

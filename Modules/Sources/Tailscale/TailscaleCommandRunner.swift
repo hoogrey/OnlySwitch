@@ -24,6 +24,10 @@ private final class TailscaleOwnedProcess: @unchecked Sendable {
             process.executableURL = executable; process.arguments = arguments
             process.standardInput = FileHandle.nullDevice
             process.standardOutput = stdout; process.standardError = stderr
+            // The bundled macOS executable uses this flag to select CLI mode.
+            var environment = ProcessInfo.processInfo.environment
+            environment["TAILSCALE_BE_CLI"] = "1"
+            process.environment = environment
             try process.run()
             let pid = process.processIdentifier
             // Foundation normally creates a child process group. Validate it
