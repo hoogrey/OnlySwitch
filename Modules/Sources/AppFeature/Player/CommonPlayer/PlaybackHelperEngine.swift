@@ -1,4 +1,5 @@
 import AVFoundation
+import Extensions
 import Foundation
 import os
 
@@ -11,6 +12,10 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     private var streamer: Streamer?
     private var playbackObservation: NSKeyValueObservation?
     private var itemObservation: NSKeyValueObservation?
+    private var reconnectURL: URL?
+    private var reconnect = RadioReconnect()
+    private var reconnectTask: Task<Void, Never>?
+    private var radioHasPlayed = false
     private var receivedStreamAudio = false
     private var desiredPlaybackActive = false
     private var playbackID: UUID?
@@ -41,34 +46,11 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
                 sound.volume = volume
                 emit(.init(isBuffering: false, hasFailed: !sound.play()))
             } else {
-                let item = AVPlayerItem(url: url)
-                item.audioTimePitchAlgorithm = .spectral
-                item.allowedAudioSpatializationFormats = .monoStereoAndMultichannel
-                let metadata = AVPlayerItemMetadataOutput(identifiers: nil)
-                metadata.setDelegate(self, queue: .main)
-                item.add(metadata)
-                let av = AVPlayer(playerItem: item)
-                player = av
-                itemObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
-                    guard item.status == .failed else { return }
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self, self.player?.currentItem === item else { return }
-                        self.emit(.init(isBuffering: false, hasFailed: true))
-                    }
-                }
-                playbackObservation = av.observe(\.timeControlStatus, options: [.new]) { [weak self] player, _ in
-                    let isBuffering = player.timeControlStatus != .playing
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self, self.player === player, self.desiredPlaybackActive else { return }
-                        self.emit(.init(isBuffering: isBuffering))
-                    }
-                }
-                av.volume = volume
+                reconnectURL = RadioReconnect.supports(url) ? url : nil
                 let path = raw.lowercased()
-                let useStreamer = command.usesWaveform == true && !path.hasSuffix(".m3u")
+                let useStreamer = command.usesWaveform == true && reconnectURL == nil && !path.hasSuffix(".m3u")
                     && !path.hasSuffix(".m3u8") && !path.hasSuffix(".aac")
-                av.isMuted = useStreamer
-                av.play()
+                startRadio(url: url, muted: useStreamer)
                 if useStreamer {
                     let stream = Streamer()
                     stream.delegate = self
@@ -81,10 +63,10 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
                         stream.play()
                     }
                 }
-                emit(.init(isBuffering: true))
             }
         case .pause:
             desiredPlaybackActive = false
+            cancelReconnect()
             player?.pause(); noise?.pause(); streamer?.pause()
             emit(.init(isBuffering: false))
         case .stop:
@@ -98,6 +80,103 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
         }
     }
 
+    private func startRadio(url: URL, muted: Bool) {
+        let item = AVPlayerItem(url: url)
+        item.audioTimePitchAlgorithm = .spectral
+        item.allowedAudioSpatializationFormats = .monoStereoAndMultichannel
+        let metadata = AVPlayerItemMetadataOutput(identifiers: nil)
+        metadata.setDelegate(self, queue: .main)
+        item.add(metadata)
+        let av = AVPlayer(playerItem: item)
+        player = av
+        itemObservation = item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
+            guard item.status == .failed else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.desiredPlaybackActive,
+                      let av = self.player, av.currentItem === item else { return }
+                if self.reconnectURL != nil {
+                    self.updateRadioStatus(av)
+                } else {
+                    self.emit(.init(isBuffering: false, hasFailed: true))
+                }
+            }
+        }
+        playbackObservation = av.observe(\.timeControlStatus, options: [.new]) { [weak self] av, _ in
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.player === av, self.desiredPlaybackActive else { return }
+                self.updateRadioStatus(av)
+            }
+        }
+        av.volume = volume
+        av.isMuted = muted
+        emit(.init(isBuffering: true))
+        av.play()
+        if reconnectURL != nil { updateRadioStatus(av) }
+    }
+
+    private func updateRadioStatus(_ av: AVPlayer) {
+        let failed = av.currentItem?.status == .failed
+        let isBuffering = failed || av.timeControlStatus != .playing
+        guard let url = reconnectURL else {
+            emit(.init(isBuffering: isBuffering))
+            return
+        }
+
+        if !isBuffering {
+            radioHasPlayed = true
+            cancelReconnect()
+            reconnect.reset()
+        } else if failed, !radioHasPlayed || reconnect.delay == nil {
+            cancelReconnect()
+            desiredPlaybackActive = false
+            emit(.init(isBuffering: false, hasFailed: true))
+            return
+        } else if !needsReconnect(av) {
+            cancelReconnect()
+        } else if radioHasPlayed, reconnectTask == nil, let delay = reconnect.delay {
+            scheduleReconnect(for: av, url: url, after: delay)
+        }
+        emit(.init(isBuffering: isBuffering))
+    }
+
+    private func needsReconnect(_ av: AVPlayer) -> Bool {
+        av.timeControlStatus == .waitingToPlayAtSpecifiedRate || av.currentItem?.status == .failed
+    }
+
+    private func scheduleReconnect(for av: AVPlayer, url: URL, after delay: Duration) {
+        reconnectTask = Task { [weak self, weak av] in
+            do {
+                try await Task.sleep(for: delay)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled, let self, let av, self.player === av,
+                  self.desiredPlaybackActive else { return }
+            self.reconnectTask = nil
+            guard self.needsReconnect(av) else {
+                self.updateRadioStatus(av)
+                return
+            }
+            self.reconnect.recordAttempt()
+            Logger.player.info("Restarting stalled HLS radio playback (attempt \(self.reconnect.attempts))")
+            self.retireRadioPlayer()
+            self.startRadio(url: url, muted: false)
+        }
+    }
+
+    private func cancelReconnect() {
+        reconnectTask?.cancel()
+        reconnectTask = nil
+    }
+
+    private func retireRadioPlayer() {
+        playbackObservation = nil
+        itemObservation = nil
+        player?.pause()
+        player?.replaceCurrentItem(with: nil)
+        player = nil
+    }
+
     private func setVolume(_ value: Float) {
         volume = value.isFinite ? min(1, max(0, value)) : 0
         player?.volume = volume
@@ -107,14 +186,15 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
 
     private func stop(emitStatus: Bool = true) {
         desiredPlaybackActive = false
-        player?.pause()
-        player?.replaceCurrentItem(with: nil)
+        cancelReconnect()
+        reconnect.reset()
+        reconnectURL = nil
+        radioHasPlayed = false
+        retireRadioPlayer()
         noise?.stop()
         streamer?.dispose()
-        playbackObservation = nil
-        itemObservation = nil
         receivedStreamAudio = false
-        player = nil; noise = nil; streamer = nil
+        noise = nil; streamer = nil
         if emitStatus { emit(.init(isBuffering: false)) }
     }
 
@@ -129,9 +209,10 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     }
 
     func metadataOutput(_ output: AVPlayerItemMetadataOutput, didOutputTimedMetadataGroups groups: [AVTimedMetadataGroup], from track: AVPlayerItemTrack?) {
-        guard player?.currentItem?.outputs.contains(where: { $0 === output }) == true,
+        guard desiredPlaybackActive, player?.currentItem?.outputs.contains(where: { $0 === output }) == true,
               let item = groups.first?.items.first, let title = item.value(forKeyPath: "value") as? String else { return }
-        emit(.init(trackInfo: title.trimmingCharacters(in: .newlines), isBuffering: false))
+        emit(.init(trackInfo: title.trimmingCharacters(in: .newlines),
+                   isBuffering: reconnectURL == nil ? false : nil))
     }
 
     nonisolated func streamer(_ streamer: Streaming, downloadComplete url: URL) {
