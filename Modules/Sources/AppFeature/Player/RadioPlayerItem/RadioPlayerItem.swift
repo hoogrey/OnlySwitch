@@ -23,6 +23,7 @@ struct RadioPlayerItem {
         }
     }
     
+    var artworkURL: URL?
     var streamUrl:String = ""
     var streamInfo:String = ""
     {
@@ -43,6 +44,7 @@ struct RadioPlayerItem {
     mutating func updateItem(radio:RadioStations) {
         self.id = radio.id!
         self.title = radio.title!
+        self.artworkURL = radio.favicon.flatMap(URL.init(string:))
         self.streamUrl = radio.url!
         self.streamInfo = ""
     }

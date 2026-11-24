@@ -16,7 +16,10 @@ struct RadioFavoritesFeatureTests {
         let favorites = [RadioBrowserFixtures.favorite(1), RadioBrowserFixtures.favorite(2)]
         let store = makeStore(FakeRadioLibrary(favorites: favorites))
         await store.send(.reload)
-        await store.receive(\.favoritesLoaded) { $0.favorites = favorites }
+        await store.receive(\.favoritesLoaded) {
+            $0.favorites = favorites
+            $0.loadPhase = .loaded
+        }
         await store.receive(\.delegate.favoritesChanged)
     }
 
@@ -33,7 +36,10 @@ struct RadioFavoritesFeatureTests {
         await store.receive(\.saveFinished) { $0.editor = nil }
         await store.receive(\.delegate.notify)
         await store.receive(\.reload)
-        await store.receive(\.favoritesLoaded) { $0.favorites = library.favorites }
+        await store.receive(\.favoritesLoaded) {
+            $0.favorites = library.favorites
+            $0.loadPhase = .loaded
+        }
         await store.receive(\.delegate.favoritesChanged)
         #expect(library.added.map(\.0) == [valid])
     }
@@ -103,6 +109,7 @@ struct RadioFavoritesFeatureTests {
         var state = RadioFavoritesFeature.State()
         state.favorites = favorites
         state.playback = RadioPlaybackStatus(currentID: favorites[0].id, isPlaying: true)
+        library.status = state.playback
         let store = makeStore(library, state: state)
         await store.send(.playTapped(favorites[0].id))
         await store.send(.playTapped(favorites[1].id))
@@ -117,11 +124,106 @@ struct RadioFavoritesFeatureTests {
         var state = RadioFavoritesFeature.State()
         state.favorites = [favorite]
         state.playback = RadioPlaybackStatus(currentID: favorite.id, isPlaying: true, previewingStationID: "s1")
+        library.status = state.playback
         let store = makeStore(library, state: state)
         await store.send(.playTapped(favorite.id))
         await store.finish()
         #expect(library.played == [favorite.id])
         #expect(library.toggles == 0)
+    }
+
+    @Test func stationButtonsWrapThroughAllFavoritesUsingTheLivePlayerSelection() async {
+        let first = RadioBrowserFixtures.favorite(1)
+        let last = RadioBrowserFixtures.favorite(2)
+        let library = FakeRadioLibrary(favorites: [first, last])
+        var state = RadioFavoritesFeature.State()
+        state.favorites = library.favorites
+        state.filterText = first.name
+        state.playback = RadioPlaybackStatus(currentID: first.id)
+        let store = makeStore(library, state: state)
+
+        library.status = RadioPlaybackStatus(currentID: last.id)
+        await store.send(.nextStationTapped).finish()
+        library.status = RadioPlaybackStatus(currentID: first.id)
+        await store.send(.previousStationTapped).finish()
+        #expect(library.played == [first.id, last.id])
+    }
+
+    @Test func missingSelectionUsesTheFirstOrLastFavorite() async {
+        let first = RadioBrowserFixtures.favorite(1)
+        let last = RadioBrowserFixtures.favorite(2)
+        let library = FakeRadioLibrary(favorites: [first, last])
+        library.status = RadioPlaybackStatus(currentID: UUID())
+        var state = RadioFavoritesFeature.State()
+        state.favorites = library.favorites
+        let store = makeStore(library, state: state)
+
+        await store.send(.togglePlaybackTapped).finish()
+        await store.send(.previousStationTapped).finish()
+        await store.send(.nextStationTapped).finish()
+        #expect(library.played == [first.id, last.id, first.id])
+        #expect(library.toggles == 0)
+    }
+
+    @Test func transportSkipsEmptyAndSingleStationLibraries() async {
+        for favorites in [[], [RadioBrowserFixtures.favorite(1)]] {
+            let library = FakeRadioLibrary(favorites: favorites)
+            var state = RadioFavoritesFeature.State()
+            state.favorites = favorites
+            let store = makeStore(library, state: state)
+
+            await store.send(.previousStationTapped).finish()
+            await store.send(.nextStationTapped).finish()
+            await store.send(.togglePlaybackTapped).finish()
+            #expect(library.played == favorites.map(\.id))
+            #expect(library.toggles == 0)
+        }
+    }
+
+    @Test func auditionSupportsPlaybackAndAnExplicitFavoriteSelection() async {
+        let favorites = [RadioBrowserFixtures.favorite(1), RadioBrowserFixtures.favorite(2)]
+        let library = FakeRadioLibrary(favorites: favorites)
+        library.status = RadioPlaybackStatus(currentID: UUID(), isPlaying: true, previewingStationID: "preview")
+        var state = RadioFavoritesFeature.State()
+        state.favorites = favorites
+        let store = makeStore(library, state: state)
+
+        await store.send(.previousStationTapped).finish()
+        await store.send(.nextStationTapped).finish()
+        await store.send(.togglePlaybackTapped).finish()
+        await store.send(.playTapped(favorites[0].id)).finish()
+        #expect(library.toggles == 1)
+        #expect(library.played == [favorites[0].id])
+    }
+
+    @Test func retryDistinguishesUnreadableFavoritesFromAnEmptyLibrary() async {
+        let library = FakeRadioLibrary()
+        library.failure = .storeUnavailable("offline")
+        let store = makeStore(library)
+        #expect(store.state.loadPhase == .loading)
+        await store.send(.reload)
+        await store.receive(\.loadFailed) { $0.loadPhase = .failed("offline") }
+        await store.receive(\.delegate.notify)
+
+        library.failure = nil
+        await store.send(.reload) { $0.loadPhase = .loading }
+        await store.receive(\.favoritesLoaded) { $0.loadPhase = .loaded }
+        await store.receive(\.delegate.favoritesChanged)
+        #expect(store.state.favorites.isEmpty)
+    }
+
+    @Test func idleTitleUsesTheFavoriteThatPlayWillStart() {
+        let first = RadioBrowserFixtures.favorite(1)
+        let second = RadioBrowserFixtures.favorite(2)
+        var state = RadioFavoritesFeature.State()
+        state.playback = RadioPlaybackStatus(currentID: UUID(), title: "Placeholder")
+        #expect(state.stationTitle == nil)
+        state.favorites = [first, second]
+        #expect(state.stationTitle == first.name)
+        state.playback.currentID = second.id
+        #expect(state.stationTitle == second.name)
+        state.playback = RadioPlaybackStatus(previewingStationID: "preview", title: "Preview station")
+        #expect(state.stationTitle == "Preview station")
     }
 
     @Test func filterMatchesNameAndHost() {

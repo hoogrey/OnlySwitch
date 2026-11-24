@@ -55,9 +55,12 @@ struct RadioStationsFeatureTests {
         let task = await store.send(.task)
         await store.receive(\.favorites.favoritesLoaded)
         let status = RadioPlaybackStatus(currentID: library.favorites[0].id, isPlaying: true, previewingStationID: "s1")
-        library.updates.continuation.yield(status)
-        await store.receive(\.playbackChanged, status)
-        #expect(store.state.favorites.playback == status)
+        var playing = status
+        playing.title = "Example Radio"
+        playing.streamInfo = "Track 1"
+        library.updates.continuation.yield(playing)
+        await store.receive(\.playbackChanged, playing)
+        #expect(store.state.favorites.playback == playing)
         #expect(store.state.browse.previewingStationID == "s1")
         await task.cancel()
     }

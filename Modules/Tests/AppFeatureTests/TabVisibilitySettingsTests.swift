@@ -13,7 +13,7 @@ struct TabVisibilitySettingsTests {
     @Test func everyOptionalTabIsManageableAndControlsIsNot() {
         #expect(SectionBar.Section.manageable == SectionBar.Section.allCases.filter { $0 != .controls })
         #expect(!SectionBar.Section.manageable.contains(.controls))
-        #expect(SectionBar.Section.manageable.count == 12)
+        #expect(SectionBar.Section.manageable.count == 13)
     }
 
     @Test func tabsBackedByDefaultsUseTheExistingSharedKeys() {
@@ -27,6 +27,7 @@ struct TabVisibilitySettingsTests {
         #expect(SectionBar.Section.screenshots.visibilityDefaultsKey == UserDefaults.Key.showScreenshotsTab)
         #expect(SectionBar.Section.schedules.visibilityDefaultsKey == UserDefaults.Key.showSchedulesTab)
         #expect(SectionBar.Section.browser.visibilityDefaultsKey == UserDefaults.Key.showBrowserTab)
+        #expect(SectionBar.Section.radio.visibilityDefaultsKey == UserDefaults.Key.showRadioTab)
         #expect(SectionBar.Section.authenticator.visibilityDefaultsKey == nil)
         #expect(SectionBar.Section.soundMixer.visibilityDefaultsKey == nil)
     }
@@ -47,14 +48,19 @@ struct TabVisibilitySettingsTests {
 
         #expect(client.isVisible(.controls))
         #expect(client.isVisible(.xcodeCleaner))
+        #expect(client.isVisible(.radio))
         #expect(!client.isVisible(.authenticator))
         #expect(client.isVisible(.soundMixer))
 
         client.setVisible(false, .xcodeCleaner)
+        client.setVisible(false, .radio)
         client.setVisible(true, .authenticator)
         client.setVisible(false, .soundMixer)
         client.setVisible(false, .controls)
 
+        #expect(defaults.object(forKey: UserDefaults.Key.showRadioTab) as? Bool == false)
+        #expect(defaults.object(forKey: UserDefaults.Key.radioEnable) == nil)
+        #expect(UserDefaults.Key.exportableKeys.contains(UserDefaults.Key.showRadioTab))
         #expect(defaults.object(forKey: "showXcodeCleanerTabKey") as? Bool == false)
         #expect(defaults.object(forKey: "showScreenshotsTabKey") == nil)
         #expect(authenticator)
@@ -195,8 +201,9 @@ struct TabVisibilitySettingsTests {
         #expect(stored.filter { $0 != .brightness } == viewModel.sections)
     }
 
-    @Test func hidingSelectedBrightnessReturnsOnlyControlToControls() async {
-        let store = TestStore(initialState: OnlyControlReducer.State(selectedSection: .brightness)) {
+    @Test(arguments: [SectionBar.Section.brightness, .radio])
+    func hidingTheSelectedTabReturnsOnlyControlToControls(_ section: SectionBar.Section) async {
+        let store = TestStore(initialState: OnlyControlReducer.State(selectedSection: section)) {
             OnlyControlReducer()
         }
         await store.send(.availableSectionsChanged([.controls])) { $0.selectedSection = .controls }
@@ -219,11 +226,11 @@ struct TabVisibilitySettingsTests {
             systemMonitor: false, codexUsage: false, schedules: client.isVisible(.schedules)) == [.controls, .schedules])
     }
 
-    @Test func schedulesAndBrowserTabsAreLastAndUseTheirSymbols() {
+    @Test func schedulesBrowserAndRadioFollowTheEarlierTabs() {
         let all = SectionBar.sections(authenticator: true, soundMixer: true, systemMonitor: true, codexUsage: true,
             claudeUsage: true, aphrodite: true, xcodeCleaner: true, appUninstaller: true, screenshots: true,
-            brightness: true, schedules: true, browser: true)
-        #expect(all.suffix(2) == [.schedules, .browser])
+            brightness: true, schedules: true, browser: true, radio: true)
+        #expect(all.suffix(3) == [.schedules, .browser, .radio])
         #expect(all.count == SectionBar.Section.allCases.count)
         #expect(SectionBar.Section.browser.symbolName == "safari")
         #expect(SectionBar.Section.browser.assetName == nil)
@@ -247,6 +254,7 @@ struct TabVisibilitySettingsTests {
         let order = SectionBar.manageableOrder(from: "schedules,controls,unknown,brightness,schedules")
         #expect(order.prefix(2) == [.schedules, .brightness])
         #expect(order.count == SectionBar.Section.manageable.count)
+        #expect(order.last == .radio)
         #expect(Set(order) == Set(SectionBar.Section.manageable))
         #expect(Array(order.dropFirst(2)) == SectionBar.Section.manageable.filter { $0 != .schedules && $0 != .brightness })
         #expect(SectionBar.manageableOrder(from: SectionBar.storedOrder(order)) == order)

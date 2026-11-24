@@ -17,20 +17,76 @@ struct AudioStreamingTests {
         }
     }
 
-    @Test("The converter consumes the only packet and reports zero packets on exhaustion")
+    @MainActor
+    @Test func liveMP3SchedulesWithinOneSecondOfUnreadAudio() throws {
+        let parser = try Parser()
+        var mp3 = AudioStreamBasicDescription(mSampleRate: 44_100, mFormatID: kAudioFormatMPEGLayer3,
+            mFormatFlags: 0, mBytesPerPacket: 0, mFramesPerPacket: 1_152,
+            mBytesPerFrame: 0, mChannelsPerFrame: 2, mBitsPerChannel: 0, mReserved: 0)
+        parser.dataFormat = AVAudioFormat(streamDescription: &mp3)
+        parser.packetCount = 10_000
+        let streamer = SchedulingProbeStreamer()
+        let reader = try SchedulingProbeReader(parser: parser, readFormat: streamer.readFormat)
+        streamer.parser = parser
+        streamer.reader = reader
+        streamer.state = .playing
+
+        // The converter retains consumed packets until the next 256-packet trim.
+        reader.currentPacket = 256
+        let packet = (Data([0]), Optional<AudioStreamPacketDescription>.none)
+        parser.withPackets { $0 = Array(repeating: packet, count: 256) }
+        streamer.scheduleNextBuffer()
+        #expect(reader.readRequests.isEmpty)
+
+        // Deliver one packet every 26 ms of virtual stream time. A single packet
+        // cannot supply the full 2,048 output frames required by the converter.
+        parser.withPackets { $0.append(packet) }
+        streamer.scheduleNextBuffer()
+        #expect(reader.readRequests.isEmpty)
+
+        for _ in 2...38 {
+            parser.withPackets { $0.append(packet) }
+            streamer.scheduleNextBuffer()
+            if reader.readRequests.isEmpty == false { break }
+        }
+        #expect(reader.readRequests == [streamer.readBufferSize])
+    }
+
+    @MainActor
+    @Test func aCompletedDownloadDrainsPCMRemainingInTheConverter() throws {
+        let parser = try makeParser()
+        append(0.25, to: parser)
+        let streamer = SchedulingProbeStreamer()
+        let reader = try SchedulingProbeReader(parser: parser, readFormat: streamer.readFormat)
+        reader.outputFrameLengths = [1, 1, 0]
+        streamer.parser = parser
+        streamer.reader = reader
+        streamer.state = .playing
+        streamer.markInputComplete()
+
+        streamer.scheduleNextBuffer()
+        reader.currentPacket = 1
+
+        streamer.scheduleNextBuffer()
+        #expect(!streamer.isFileSchedulingComplete)
+        streamer.scheduleNextBuffer()
+        #expect(streamer.isFileSchedulingComplete)
+        streamer.scheduleNextBuffer()
+        #expect(reader.readRequests.count == 3)
+    }
+
+    @Test("The converter drains the last sample and reports zero frames for completed input")
     func consumesLastPacket() throws {
         let parser = try makeParser()
         append(0.25, to: parser)
         let reader = try Reader(parser: parser, readFormat: #require(parser.dataFormat))
-        let buffer = try reader.read(1)
+        let buffer = try reader.read(2, inputIsComplete: true)
+        #expect(buffer.frameLength == 1)
         #expect(buffer.floatChannelData?[0][0] == 0.25)
         #expect(reader.currentPacket == 1)
 
-        var count: UInt32 = 99
-        var list = AudioBufferList()
-        let status = ReaderConverterCallback(try #require(reader.converter), &count, &list, nil, Unmanaged.passUnretained(reader).toOpaque())
-        #expect(status == ReaderReachedEndOfDataError)
-        #expect(count == 0)
+        let drained = try reader.read(2, inputIsComplete: true)
+        #expect(drained.frameLength == 0)
     }
 
     @Test("An empty incomplete stream returns no input without indexing the array")
@@ -167,5 +223,38 @@ private final class SharedParser: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         return recorded
+    }
+}
+
+/// Exercises the real scheduling entry point without activating an audio device.
+private final class SchedulingProbeStreamer: Streamer, @unchecked Sendable {
+    override func setupAudioEngine() {
+        attachNodes()
+        connectNodes()
+    }
+}
+
+private final class SchedulingProbeReader: Reading {
+    var currentPacket: AVAudioPacketCount = 0
+    let parser: Parsing
+    let readFormat: AVAudioFormat
+    var readRequests: [AVAudioFrameCount] = []
+    var outputFrameLengths: [AVAudioFrameCount] = []
+
+    init(parser: Parsing, readFormat: AVAudioFormat) throws {
+        self.parser = parser
+        self.readFormat = readFormat
+    }
+
+    func read(_ frames: AVAudioFrameCount) throws -> AVAudioPCMBuffer {
+        readRequests.append(frames)
+        guard !outputFrameLengths.isEmpty else { throw ReaderError.notEnoughData }
+        let buffer = try #require(AVAudioPCMBuffer(pcmFormat: readFormat, frameCapacity: frames))
+        buffer.frameLength = outputFrameLengths.removeFirst()
+        return buffer
+    }
+
+    func seek(_ packet: AVAudioPacketCount) throws {
+        currentPacket = packet
     }
 }

@@ -102,6 +102,13 @@ class Streamer: Streaming, @unchecked Sendable {
     
     /// A `Bool` indicating whether the file has been completely scheduled into the player node.
     var isFileSchedulingComplete = false
+    private var hasScheduledAudio = false
+    private var hasReadInput = false
+    private let completedInput = OSAllocatedUnfairLock(initialState: false)
+
+    func markInputComplete() {
+        completedInput.withLock { $0 = true }
+    }
 
     // MARK: - Lifecycle
     
@@ -249,6 +256,9 @@ class Streamer: Streaming, @unchecked Sendable {
         volumeRampTargetValue = nil
         volumeRampRevision += 1
         reader?.parser.withPackets { $0.removeAll() }
+        hasScheduledAudio = false
+        hasReadInput = false
+        completedInput.withLock { $0 = false }
         // Update the state
         state = .stopped
     }
@@ -268,6 +278,8 @@ class Streamer: Streaming, @unchecked Sendable {
         }
         currentTimeOffset = time
         isFileSchedulingComplete = false
+        hasScheduledAudio = false
+        hasReadInput = false
         
         // We need to store whether or not the player node is currently playing to properly resume playback after
         let isPlaying = playerNode.isPlaying
@@ -322,30 +334,70 @@ class Streamer: Streaming, @unchecked Sendable {
     // MARK: - Scheduling Buffers
 
     func scheduleNextBuffer() {
-        guard let reader = reader else {
-//            os_log("No reader yet...", log: Streamer.logger, type: .debug)
+        guard let reader, !isFileSchedulingComplete else { return }
+
+        let inputComplete = completedInput.withLock { $0 }
+        let sourceFormat = reader.parser.dataFormat?.streamDescription.pointee
+        let outputBufferDuration = Double(readBufferSize) / reader.readFormat.sampleRate
+        // Leave a short cushion for converter priming. Once sound is scheduled, let queued
+        // audio and new input carry playback without keeping the startup cushion unused.
+        let bufferDuration = hasScheduledAudio ? 2 * outputBufferDuration : 0.9
+        let ready = reader.parser.withPackets { packets in
+            // The converter may still own PCM after consuming the last input packet.
+            if inputComplete, hasReadInput { return true }
+            guard let index = Int(exactly: reader.currentPacket), packets.indices.contains(index) else { return false }
+            if inputComplete { return true }
+            return hasBufferedAudio(packets[index...], format: sourceFormat, duration: bufferDuration)
+        }
+        guard ready else {
+            if inputComplete { isFileSchedulingComplete = true }
             return
         }
 
-        guard !isFileSchedulingComplete else {
-            return
-        }
-
-        guard reader.parser.withPackets({ $0.count }) > 512 else {
-            return
-        }
-        
         do {
-            let nextScheduledBuffer = try reader.read(readBufferSize)
-
-            playerNode.scheduleBuffer(nextScheduledBuffer)
-            
-        } catch ReaderError.reachedEndOfFile {
-            os_log("Scheduler reached end of file", log: Streamer.logger, type: .debug)
-            isFileSchedulingComplete = true
+            hasReadInput = true
+            let nextBuffer = try reader.read(readBufferSize, inputIsComplete: inputComplete)
+            guard nextBuffer.frameLength > 0 else {
+                isFileSchedulingComplete = inputComplete
+                return
+            }
+            playerNode.scheduleBuffer(nextBuffer)
+            hasScheduledAudio = true
+        } catch ReaderError.reachedEndOfFile, ReaderError.notEnoughData {
+            // A live parser can report EOF when it has consumed all input received so far.
+            // Only a completed download makes that permanent.
+            isFileSchedulingComplete = inputComplete
+            hasScheduledAudio = false
         } catch {
             os_log("Cannot schedule buffer: %@", log: Streamer.logger, type: .debug, error.localizedDescription)
         }
+    }
+
+    private func hasBufferedAudio(
+        _ packets: ArraySlice<(Data, AudioStreamPacketDescription?)>,
+        format: AudioStreamBasicDescription?,
+        duration: TimeInterval
+    ) -> Bool {
+        // Codec metadata can omit packet lengths. Still require several unread packets
+        // before calling the converter rather than attempting a read on each new packet.
+        let enoughUnknownPackets = packets.count >= 32
+        guard let format, format.mSampleRate.isFinite, format.mSampleRate > 0 else {
+            return enoughUnknownPackets
+        }
+        let neededFrames = duration * format.mSampleRate
+        if format.mFramesPerPacket > 0 {
+            return Double(packets.count) * Double(format.mFramesPerPacket) >= neededFrames
+        }
+
+        var frames: Double = 0
+        for (_, description) in packets {
+            guard let count = description?.mVariableFramesInPacket, count > 0 else {
+                return enoughUnknownPackets
+            }
+            frames += Double(count)
+            if frames >= neededFrames { return true }
+        }
+        return false
     }
 
     // MARK: - Handling Time Updates

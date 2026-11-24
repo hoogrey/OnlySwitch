@@ -174,6 +174,7 @@ struct RadioBrowseFeatureTests {
     @Test func previewTogglesAndCountsAClick() async {
         let station = RadioBrowserFixtures.station("s1")
         let library = FakeRadioLibrary()
+        library.status = RadioPlaybackStatus(isPlaying: true, previewingStationID: station.id)
         let recorder = SearchRecorder(pages: [])
         let store = makeStore(recorder, library: library)
         await store.send(.previewTapped(station)) { $0.previewingStationID = "s1" }
@@ -185,6 +186,15 @@ struct RadioBrowseFeatureTests {
         await store.send(.previewTapped(station)) { $0.previewingStationID = nil }
         await store.finish()
         #expect(library.stopPreviews == 1)
+    }
+
+    @Test func declinedPreviewClearsSelectionAndSkipsTheClick() async {
+        let station = RadioBrowserFixtures.station("s1")
+        let recorder = SearchRecorder(pages: [])
+        let store = makeStore(recorder)
+        await store.send(.previewTapped(station)) { $0.previewingStationID = station.id }
+        await store.receive(\.playbackChanged) { $0.previewingStationID = nil }
+        #expect(await recorder.clicks.isEmpty)
     }
 
     @Test func leavingThePageStopsAPreview() async {

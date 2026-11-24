@@ -38,10 +38,19 @@ public protocol Reading {
     /// - Parameter frames: An `AVAudioFrameCount` representing the total number of audio frames to read. The format of the target audio frames should match the input `readFormat` in the `init(parser:,readFormat:)` initializer.
     /// - Throws: A error representing an issue with the read operation.
     func read(_ frames: AVAudioFrameCount) throws -> AVAudioPCMBuffer
+
+    /// Reads audio and allows the converter to flush when the source has finished delivering input.
+    func read(_ frames: AVAudioFrameCount, inputIsComplete: Bool) throws -> AVAudioPCMBuffer
     
     /// Should change the current position of the read index to match the packet provided. This effectively performs a seek operation, but should be done in a thread-safe way.
     ///
     /// - Parameter packet: An `AVAudioPacketCount` representing the packet index.
     /// - Throws: A error representing an issue with the seek operation.
     func seek(_ packet: AVAudioPacketCount) throws
+}
+
+public extension Reading {
+    func read(_ frames: AVAudioFrameCount, inputIsComplete: Bool) throws -> AVAudioPCMBuffer {
+        try read(frames)
+    }
 }

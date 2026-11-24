@@ -72,7 +72,7 @@ struct RadioSettingView: View {
 }
 
 /// Liquid Glass on macOS 26, material with a hairline elsewhere.
-private struct RadioSettingsCard: ViewModifier {
+struct RadioSettingsCard: ViewModifier {
     func body(content: Content) -> some View {
         if #available(macOS 26.0, *) {
             content.glassEffect(.regular, in: .rect(cornerRadius: 12))

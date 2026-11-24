@@ -23,6 +23,7 @@ extension Streamer: DownloadingDelegate {
         } else if let url = download.url {
             DispatchQueue.main.async { [weak self] in
                 guard let self, !self.isDisposed else { return }
+                if url == self.url { self.markInputComplete() }
                 self.delegate?.streamer(self, downloadComplete: url)
             }
         }

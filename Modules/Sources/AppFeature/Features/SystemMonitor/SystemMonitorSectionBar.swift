@@ -18,6 +18,7 @@ enum SectionBar {
         case brightness
         case schedules
         case browser
+        case radio
 
         var allowsOutsideClickDismissal: Bool { self != .appUninstaller && self != .screenshots }
 
@@ -36,6 +37,7 @@ enum SectionBar {
             case .brightness: "Brightness".localized()
             case .schedules: "Schedules".localized()
             case .browser: "Browser".localized()
+            case .radio: "Radio".localized()
             }
         }
 
@@ -54,6 +56,7 @@ enum SectionBar {
             case .brightness: "sun.max.fill"
             case .schedules: "calendar.badge.clock"
             case .browser: "safari"
+            case .radio: "radio"
             }
         }
 
@@ -62,7 +65,7 @@ enum SectionBar {
             switch self {
             case .codexUsage: "openai_logo"
             case .claudeUsage: "claude_logo"
-            case .controls, .authenticator, .soundMixer, .systemMonitor, .aphrodite, .xcodeCleaner, .appUninstaller, .screenshots, .brightness, .schedules, .browser: nil
+            case .controls, .authenticator, .soundMixer, .systemMonitor, .aphrodite, .xcodeCleaner, .appUninstaller, .screenshots, .brightness, .schedules, .browser, .radio: nil
             }
         }
     }
@@ -80,13 +83,14 @@ enum SectionBar {
         brightness: Bool = false,
         schedules: Bool = false,
         browser: Bool = false,
+        radio: Bool = false,
         order: [Section] = Section.manageable
     ) -> [Section] {
         let isVisible: [Section: Bool] = [
             .authenticator: authenticator, .soundMixer: soundMixer, .systemMonitor: systemMonitor,
             .codexUsage: codexUsage, .claudeUsage: claudeUsage, .aphrodite: aphrodite,
             .xcodeCleaner: xcodeCleaner, .appUninstaller: appUninstaller, .screenshots: screenshots,
-            .brightness: brightness, .schedules: schedules, .browser: browser,
+            .brightness: brightness, .schedules: schedules, .browser: browser, .radio: radio,
         ]
         return [.controls] + order.filter { isVisible[$0] == true }
     }

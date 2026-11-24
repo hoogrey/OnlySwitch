@@ -61,6 +61,8 @@ struct OnlySwitchListView: View {
     @AppStorage(UserDefaults.Key.displayBrightnessEnabled) private var displayBrightnessEnabled = true
     @AppStorage(UserDefaults.Key.showSchedulesTab) private var showSchedulesTab = true
     @AppStorage(UserDefaults.Key.showBrowserTab) private var showBrowserTab = true
+    @AppStorage(UserDefaults.Key.showRadioTab) private var showRadioTab = true
+    @AppStorage(UserDefaults.Key.radioEnable) private var radioEnabledData = Data()
     @AppStorage(UserDefaults.Key.tabOrder) private var tabOrder = ""
 
     let columns = [
@@ -149,6 +151,9 @@ struct OnlySwitchListView: View {
                             .padding(.vertical, 6)
                             .environment(\.locale, Locale(identifier: languageManager.currentLang))
                             .id(languageManager.currentLang)
+                        case .radio:
+                            RadioControlsTabView(store: SettingsVM.shared.radioStationsStore)
+                                .id(languageManager.currentLang)
                         case .browser:
                             BrowserPanelView(store: SettingsVM.shared.browserStore, compact: true) {
                                 SettingsVM.shared.selection = .Browser
@@ -301,6 +306,7 @@ struct OnlySwitchListView: View {
             brightness: showBrightnessTab && displayBrightnessEnabled,
             schedules: showSchedulesTab,
             browser: showBrowserTab,
+            radio: showRadioTab && ((try? JSONDecoder().decode(Bool.self, from: radioEnabledData)) ?? true),
             order: SectionBar.manageableOrder(from: tabOrder)
         )
     }

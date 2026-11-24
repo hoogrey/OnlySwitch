@@ -11,7 +11,6 @@ import AudioToolbox
 
 // MARK: - Reader OSStatus Error Codes
 
-let ReaderReachedEndOfDataError: OSStatus = 932332581
 let ReaderNotEnoughDataError: OSStatus = 932332582
 let ReaderMissingSourceFormatError: OSStatus = 932332583
 

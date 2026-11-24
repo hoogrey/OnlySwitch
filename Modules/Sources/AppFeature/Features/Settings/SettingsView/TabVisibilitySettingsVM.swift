@@ -73,6 +73,7 @@ extension SectionBar.Section {
         case .brightness: UserDefaults.Key.showBrightnessTab
         case .schedules: UserDefaults.Key.showSchedulesTab
         case .browser: UserDefaults.Key.showBrowserTab
+        case .radio: UserDefaults.Key.showRadioTab
         case .controls, .authenticator, .soundMixer: nil
         }
     }

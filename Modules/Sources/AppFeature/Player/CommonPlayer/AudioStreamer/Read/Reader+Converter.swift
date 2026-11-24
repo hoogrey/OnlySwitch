@@ -29,7 +29,6 @@ func ReaderConverterCallback(_ converter: AudioConverterRef,
         return ReaderMissingSourceFormatError
     }
 
-    let isParsingComplete = reader.parser.isParsingComplete
     let packet = reader.parser.withPackets { packets -> (Data, AudioStreamPacketDescription?)? in
         let packetIndex = Int(reader.currentPacket)
         guard packetIndex < packets.count else { return nil }
@@ -42,7 +41,9 @@ func ReaderConverterCallback(_ converter: AudioConverterRef,
         return packet
     }
     guard let packet else {
-        return isParsingComplete ? ReaderReachedEndOfDataError : ReaderNotEnoughDataError
+        // Zero packets with success signals EOF and flushes buffered PCM. Until
+        // the download confirms completion, let the converter keep its state.
+        return reader.inputIsComplete ? noErr : ReaderNotEnoughDataError
     }
 
     let data = packet.0

@@ -149,8 +149,13 @@ public struct RadioBrowseFeature {
                     return .run { [library] _ in await library.stopPreview() }
                 }
                 state.previewingStationID = station.id
-                return .run { [library, browser] _ in
-                    await library.preview(station)
+                return .run { @MainActor [library, browser] send in
+                    library.preview(station)
+                    let status = library.playbackStatus()
+                    guard status.previewingStationID == station.id else {
+                        send(.playbackChanged(status))
+                        return
+                    }
                     await browser.registerClick(station.id)
                 }
 

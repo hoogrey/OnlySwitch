@@ -222,7 +222,7 @@ class SettingsVM: ObservableObject {
         TailscaleFeature()
     }
 
-    /// Keeps browse results and favorites across visits to the Radio settings page.
+    /// Shares favorites and playback state between Radio settings and both tab hosts.
     lazy var radioStationsStore = Store(initialState: RadioStationsFeature.State()) {
         RadioStationsFeature()
     } withDependencies: {

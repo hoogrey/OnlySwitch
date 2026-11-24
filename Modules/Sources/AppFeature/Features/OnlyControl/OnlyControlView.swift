@@ -48,6 +48,8 @@ struct OnlyControlView: View {
     @AppStorage(UserDefaults.Key.displayBrightnessEnabled) private var displayBrightnessEnabled = true
     @AppStorage(UserDefaults.Key.showSchedulesTab) private var showSchedulesTab = true
     @AppStorage(UserDefaults.Key.showBrowserTab) private var showBrowserTab = true
+    @AppStorage(UserDefaults.Key.showRadioTab) private var showRadioTab = true
+    @AppStorage(UserDefaults.Key.radioEnable) private var radioEnabledData = Data()
     @AppStorage(UserDefaults.Key.tabOrder) private var tabOrder = ""
     
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
@@ -162,6 +164,9 @@ struct OnlyControlView: View {
                 .padding(.vertical, 12)
                 .environment(\.locale, Locale(identifier: languageManager.currentLang))
                 .id(languageManager.currentLang)
+            case .radio:
+                RadioControlsTabView(store: SettingsVM.shared.radioStationsStore)
+                    .id(languageManager.currentLang)
             case .browser:
                 BrowserPanelView(store: SettingsVM.shared.browserStore, compact: false) {
                     SettingsVM.shared.selection = .Browser
@@ -306,6 +311,7 @@ struct OnlyControlView: View {
             brightness: showBrightnessTab && displayBrightnessEnabled,
             schedules: showSchedulesTab,
             browser: showBrowserTab,
+            radio: showRadioTab && ((try? JSONDecoder().decode(Bool.self, from: radioEnabledData)) ?? true),
             order: SectionBar.manageableOrder(from: tabOrder)
         )
     }

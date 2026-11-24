@@ -31,6 +31,7 @@ public class Reader: Reading {
     private let queue = DispatchQueue(label: "com.fastlearner.streamer")
     
     // Accessed only on the reader queue (or by its synchronous converter callback).
+    var inputIsComplete = false
     var converterInputData: UnsafeMutableRawPointer?
     var converterInputDescription: UnsafeMutablePointer<AudioStreamPacketDescription>?
 
@@ -72,6 +73,10 @@ public class Reader: Reading {
     // MARK: - Methods
     
     public func read(_ frames: AVAudioFrameCount) throws -> AVAudioPCMBuffer {
+        try read(frames, inputIsComplete: false)
+    }
+
+    public func read(_ frames: AVAudioFrameCount, inputIsComplete: Bool) throws -> AVAudioPCMBuffer {
         let framesPerPacket = readFormat.streamDescription.pointee.mFramesPerPacket
         var packets = frames / framesPerPacket
         
@@ -83,16 +88,18 @@ public class Reader: Reading {
         
         // Try to read the frames from the parser
         try queue.sync {
+            self.inputIsComplete = inputIsComplete
+            defer { self.inputIsComplete = false }
             let context = unsafeBitCast(self, to: UnsafeMutableRawPointer.self)
             let status = AudioConverterFillComplexBuffer(converter!, ReaderConverterCallback, context, &packets, buffer.mutableAudioBufferList, nil)
             
-            guard status == noErr else {
+            // The converter can return valid PCM before reporting that input ran out.
+            let producedPartialBuffer = packets > 0 && status == ReaderNotEnoughDataError
+            guard status == noErr || producedPartialBuffer else {
 //                AudioConverterReset(self.converter!);
                 switch status {
                 case ReaderMissingSourceFormatError:
                     throw ReaderError.parserMissingDataFormat
-                case ReaderReachedEndOfDataError:
-                    throw ReaderError.reachedEndOfFile
                 case ReaderNotEnoughDataError:
                     throw ReaderError.notEnoughData
                 default:
@@ -100,6 +107,7 @@ public class Reader: Reading {
                 }
             }
         }
+        buffer.frameLength = packets * framesPerPacket
         return buffer
     }
     
@@ -107,7 +115,8 @@ public class Reader: Reading {
         os_log("%@ - %d [packet: %i]", log: Parser.logger, type: .debug, #function, #line, packet)
         
         queue.sync {
-            currentPacket = packet
+            // The scheduler takes a snapshot of the cursor and packet array under this lock.
+            parser.withPackets { _ in currentPacket = packet }
         }
     }
 }

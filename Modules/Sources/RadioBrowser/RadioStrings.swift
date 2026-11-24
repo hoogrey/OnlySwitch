@@ -10,6 +10,7 @@ public enum RadioStrings {
         "Radio Save", "Radio Cancel", "Radio Delete", "Radio Edit", "Radio Play", "Radio Stop", "Radio Copy URL",
         "Radio Delete Station Title %@", "Radio Delete Station Message",
         "Radio Import", "Radio Export", "Radio Import Export Help", "Radio More",
+        "Radio Previous Station", "Radio Next Station",
         "Radio Now Playing", "Radio Previewing", "Radio Preview", "Radio Stop Preview",
         "Radio Add To Favorites", "Radio In Favorites",
         "Radio Popular", "Radio Top Voted", "Radio Country", "Radio Tag",

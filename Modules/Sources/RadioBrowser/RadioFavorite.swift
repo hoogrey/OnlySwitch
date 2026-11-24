@@ -77,15 +77,28 @@ public enum RadioStreamURL {
     }
 }
 
-/// What the shared radio player is doing, as far as the radio settings page cares.
+/// A snapshot of the shared radio player.
 public struct RadioPlaybackStatus: Equatable, Sendable {
     public var currentID: UUID?
     public var isPlaying: Bool
     /// Set while a browser station is being auditioned instead of a favorite.
     public var previewingStationID: String?
 
-    public init(currentID: UUID? = nil, isPlaying: Bool = false, previewingStationID: String? = nil) {
-        self.currentID = currentID; self.isPlaying = isPlaying; self.previewingStationID = previewingStationID
+    public var title: String
+    public var streamInfo: String
+
+    public init(
+        currentID: UUID? = nil,
+        isPlaying: Bool = false,
+        previewingStationID: String? = nil,
+        title: String = "",
+        streamInfo: String = ""
+    ) {
+        self.currentID = currentID
+        self.isPlaying = isPlaying
+        self.previewingStationID = previewingStationID
+        self.title = title
+        self.streamInfo = streamInfo
     }
 }
 

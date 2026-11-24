@@ -12,6 +12,10 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     private var streamer: Streamer?
     private var playbackObservation: NSKeyValueObservation?
     private var itemObservation: NSKeyValueObservation?
+    private var metadataReader: RadioStreamMetadataReader?
+    private var assetMetadataTask: Task<Void, Never>?
+    private var timeObserver: Any?
+    private var lastTiming: RadioPlaybackTiming?
     private var reconnectURL: URL?
     private var reconnect = RadioReconnect()
     private var reconnectTask: Task<Void, Never>?
@@ -89,6 +93,23 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
         item.add(metadata)
         let av = AVPlayer(playerItem: item)
         player = av
+        lastTiming = nil
+        let reader = RadioStreamMetadataReader { [weak self, weak av] event in
+            guard let self, let av, self.player === av, self.desiredPlaybackActive else { return }
+            self.emit(event)
+        }
+        metadataReader = reader
+        assetMetadataTask = Task { [weak reader] in
+            guard let common = try? await item.asset.load(.commonMetadata), !Task.isCancelled else { return }
+            reader?.read(common, timed: false)
+        }
+        timeObserver = av.addPeriodicTimeObserver(forInterval: CMTime(seconds: 5, preferredTimescale: 600),
+                                                   queue: .main) { [weak self, weak av] _ in
+            MainActor.assumeIsolated {
+                guard let self, let av, self.player === av, self.desiredPlaybackActive else { return }
+                self.updateTiming(av)
+            }
+        }
         itemObservation = item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
             guard item.status == .failed else { return }
             DispatchQueue.main.async { [weak self] in
@@ -115,6 +136,7 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     }
 
     private func updateRadioStatus(_ av: AVPlayer) {
+        updateTiming(av)
         let failed = av.currentItem?.status == .failed
         let isBuffering = failed || av.timeControlStatus != .playing
         guard let url = reconnectURL else {
@@ -137,6 +159,29 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
             scheduleReconnect(for: av, url: url, after: delay)
         }
         emit(.init(isBuffering: isBuffering))
+    }
+
+    private func updateTiming(_ av: AVPlayer) {
+        // With waveform playback the AVPlayer is a muted metadata reader with a separate clock.
+        guard !av.isMuted, let item = av.currentItem else { return }
+        let playing = av.timeControlStatus == .playing
+        var timing = RadioPlaybackTiming(isPlaying: playing)
+        // A live HLS DVR window measures the playlist, not the current program.
+        let playbackType = item.accessLog()?.events.last?.playbackType?.uppercased()
+        let isFiniteMedia = playbackType == "VOD" || playbackType == "FILE"
+        let ext = (item.asset as? AVURLAsset)?.url.pathExtension.lowercased() ?? ""
+        let directAudio = ["mp3", "aac", "m4a", "wav", "aif", "aiff", "flac"].contains(ext)
+            && playbackType != "LIVE" && item.currentDate() == nil
+        let duration = item.duration.seconds
+        let elapsed = item.currentTime().seconds
+        if (isFiniteMedia || directAudio), duration.isFinite, duration > 0,
+           elapsed.isFinite, (0...duration).contains(elapsed) {
+            timing.duration = duration
+            timing.elapsed = elapsed
+        }
+        guard timing != lastTiming else { return }
+        lastTiming = timing
+        emit(.init(timing: timing))
     }
 
     private func needsReconnect(_ av: AVPlayer) -> Bool {
@@ -170,6 +215,12 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     }
 
     private func retireRadioPlayer() {
+        metadataReader?.invalidate()
+        metadataReader = nil
+        assetMetadataTask?.cancel()
+        assetMetadataTask = nil
+        if let timeObserver { player?.removeTimeObserver(timeObserver) }
+        timeObserver = nil
         playbackObservation = nil
         itemObservation = nil
         player?.pause()
@@ -209,10 +260,8 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     }
 
     func metadataOutput(_ output: AVPlayerItemMetadataOutput, didOutputTimedMetadataGroups groups: [AVTimedMetadataGroup], from track: AVPlayerItemTrack?) {
-        guard desiredPlaybackActive, player?.currentItem?.outputs.contains(where: { $0 === output }) == true,
-              let item = groups.first?.items.first, let title = item.value(forKeyPath: "value") as? String else { return }
-        emit(.init(trackInfo: title.trimmingCharacters(in: .newlines),
-                   isBuffering: reconnectURL == nil ? false : nil))
+        guard desiredPlaybackActive, player?.currentItem?.outputs.contains(where: { $0 === output }) == true else { return }
+        for group in groups { metadataReader?.read(group.items, timed: true) }
     }
 
     nonisolated func streamer(_ streamer: Streaming, downloadComplete url: URL) {

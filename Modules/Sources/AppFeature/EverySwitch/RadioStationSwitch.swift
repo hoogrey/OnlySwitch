@@ -46,6 +46,7 @@ final class RadioStationSwitch:SwitchProvider, @unchecked Sendable {
             self.playerItem.isPlaying = false
         }
         
+        self.playerItem.model.artworkURL = station.favicon.flatMap(URL.init(string:))
         self.playerItem.title = station.title!
         self.playerItem.streamUrl = station.url!
         self.playerItem.id = station.id!

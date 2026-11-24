@@ -18,6 +18,7 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     private(set) var helperGeneration: UUID?
     private var isVisible = false
     private var playbackID: UUID?
+    private let radioPresentation = RadioNowPlayingPresenter()
     nonisolated(unsafe) private var observers: [NSObjectProtocol] = []
 
     var helperProcessIdentifier: pid_t? {
@@ -72,6 +73,12 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     private func changeRemoteTrack(next: Bool) {
         guard let item = currentPlayerItem else { return }
         if next { item.nextTrack() } else { item.previousTrack() }
+        if item.type == .Radio, item.isPlaying { return }
+        if item.type == .Radio {
+            radioPresentation.start(id: UUID(), station: item.title,
+                                    icon: (item as? RadioPlayerItemViewModel)?.model.artworkURL)
+            return
+        }
         MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] = item.title
         MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyAlbumTitle] = nil
     }
@@ -121,7 +128,14 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
                    volume: Preferences.shared.volume, usesWaveform: Preferences.shared.soundWaveEffectDisplay,
                    playbackID: playbackID))
         send(.init(action: .visible, isVisible: isVisible))
-        setupNowPlaying()
+        if item.type == .Radio {
+            radioPresentation.start(id: playbackID, station: item.title,
+                                    icon: (item as? RadioPlayerItemViewModel)?.model.artworkURL)
+            MPNowPlayingInfoCenter.default().playbackState = .playing
+        } else {
+            radioPresentation.invalidate()
+            setupNowPlaying()
+        }
         NotificationCenter.default.post(name: .ownPlaybackStateChanged, object: nil)
         if let generation = helperGeneration {
             for delay in [0.3, 1.0, 2.0] {
@@ -135,6 +149,8 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     }
 
     func pause() {
+        playbackID = nil
+        radioPresentation.stop()
         send(.init(action: .pause))
         bufferring = false
         pauseCommandCenter()
@@ -142,6 +158,8 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     }
 
     func stop() {
+        playbackID = nil
+        radioPresentation.stop()
         send(.init(action: .stop))
         bufferring = false
         pauseCommandCenter()
@@ -170,6 +188,8 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
                 self.commandInput = nil
                 self.process = nil
                 self.helperGeneration = nil
+                self.playbackID = nil
+                self.radioPresentation.invalidate()
                 self.bufferring = false
                 if let active = PlayerManager.shared.player as? HostedAudioPlayer, active === self {
                     self.currentPlayerItem?.isPlaying = false
@@ -195,9 +215,9 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
             DispatchQueue.main.async { [weak self] in
                 guard let self, self.helperGeneration == generation else { return }
                 guard event.playbackID == nil || event.playbackID == self.playbackID else { return }
+                self.radioPresentation.receive(event)
                 if let info = event.trackInfo {
                     self.currentPlayerItem?.trackInfo = info
-                    self.updateStreamInfo(info: info)
                 }
                 if let spectra = event.spectra {
                     NotificationCenter.default.post(name: .spectra, object: spectra)

@@ -7,6 +7,7 @@
 
 import Combine
 import Extensions
+import Foundation
 
 /// Playback preferences shown above the station lists. Stations themselves live in `RadioStationsFeature`.
 @MainActor
@@ -56,5 +57,10 @@ class RadioSettingVM: ObservableObject {
             self?.objectWillChange.send()
         }
         .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .volumeChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 }

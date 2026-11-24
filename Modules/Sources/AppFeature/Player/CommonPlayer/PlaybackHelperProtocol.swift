@@ -12,7 +12,16 @@ struct PlaybackHelperCommand: Codable, Sendable {
     var playbackID: UUID?
 }
 
+struct RadioPlaybackTiming: Codable, Equatable, Sendable {
+    var elapsed: Double?
+    var duration: Double?
+    var isPlaying: Bool
+}
+
 struct PlaybackHelperEvent: Codable, Sendable {
+    var programArtwork: Data?
+    var artworkProgram: String?
+    var timing: RadioPlaybackTiming?
     var trackInfo: String?
     var spectra: [[Float]]?
     var isBuffering: Bool?

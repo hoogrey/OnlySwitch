@@ -4,15 +4,29 @@ import Foundation
 /// The user's saved stations: playback, manual add/edit, deletion and import/export.
 @Reducer
 public struct RadioFavoritesFeature {
+    public enum LoadPhase: Equatable, Sendable {
+        case loading
+        case loaded
+        case failed(String)
+    }
+
     @ObservableState
     public struct State: Equatable {
         public var favorites: [RadioFavorite] = []
+        public var loadPhase: LoadPhase = .loading
         public var playback = RadioPlaybackStatus()
         public var filterText = ""
         @Presents public var editor: RadioStationEditorFeature.State?
         @Presents public var alert: AlertState<Action.Alert>?
 
         public init() {}
+
+        public var stationTitle: String? {
+            if playback.isPlaying || playback.previewingStationID != nil {
+                return playback.title.isEmpty ? nil : playback.title
+            }
+            return favorites.first { $0.id == playback.currentID }?.name ?? favorites.first?.name
+        }
 
         public var visibleFavorites: [RadioFavorite] {
             let query = filterText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -40,6 +54,9 @@ public struct RadioFavoritesFeature {
         case editTapped(UUID)
         case deleteTapped(UUID)
         case playTapped(UUID)
+        case previousStationTapped
+        case nextStationTapped
+        case togglePlaybackTapped
         case copyURLTapped(UUID)
         case importTapped
         case exportTapped
@@ -74,6 +91,7 @@ public struct RadioFavoritesFeature {
                 return .none
 
             case .reload:
+                if case .failed = state.loadPhase { state.loadPhase = .loading }
                 return .run { [library] send in
                     do {
                         await send(.favoritesLoaded(try await library.favorites()))
@@ -84,9 +102,11 @@ public struct RadioFavoritesFeature {
 
             case let .favoritesLoaded(favorites):
                 state.favorites = favorites
+                state.loadPhase = .loaded
                 return .send(.delegate(.favoritesChanged(favorites)))
 
             case let .loadFailed(error):
+                state.loadPhase = .failed(error.message.text)
                 return .send(.delegate(.notify(error.message)))
 
             case .addTapped:
@@ -129,12 +149,30 @@ public struct RadioFavoritesFeature {
                 }
 
             case let .playTapped(id):
-                let toggles = state.isCurrent(id)
-                return .run { [library] _ in
-                    if toggles {
-                        await library.togglePlayback()
+                guard state.favorites.contains(where: { $0.id == id }) else { return .none }
+                return .run { @MainActor [library] _ in
+                    let playback = library.playbackStatus()
+                    if playback.previewingStationID == nil, playback.currentID == id {
+                        library.togglePlayback()
                     } else {
-                        await library.play(id)
+                        library.play(id)
+                    }
+                }
+
+            case .previousStationTapped:
+                return moveStation(by: -1, favorites: state.favorites)
+
+            case .nextStationTapped:
+                return moveStation(by: 1, favorites: state.favorites)
+
+            case .togglePlaybackTapped:
+                return .run { @MainActor [library, favorites = state.favorites] _ in
+                    let playback = library.playbackStatus()
+                    if playback.isPlaying || playback.previewingStationID != nil
+                        || favorites.contains(where: { $0.id == playback.currentID }) {
+                        library.togglePlayback()
+                    } else if let first = favorites.first {
+                        library.play(first.id)
                     }
                 }
 
@@ -197,5 +235,17 @@ public struct RadioFavoritesFeature {
         }
         .ifLet(\.$editor, action: \.editor) { RadioStationEditorFeature() }
         .ifLet(\.$alert, action: \.alert)
+    }
+
+    private func moveStation(by offset: Int, favorites: [RadioFavorite]) -> Effect<Action> {
+        guard favorites.count > 1 else { return .none }
+        return .run { @MainActor [library] _ in
+            let playback = library.playbackStatus()
+            guard playback.previewingStationID == nil else { return }
+            let current = favorites.firstIndex { $0.id == playback.currentID }
+            let index = current.map { ($0 + offset + favorites.count) % favorites.count }
+                ?? (offset > 0 ? 0 : favorites.count - 1)
+            library.play(favorites[index].id)
+        }
     }
 }

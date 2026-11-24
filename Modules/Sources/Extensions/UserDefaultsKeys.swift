@@ -82,6 +82,7 @@ public extension UserDefaults {
         /// Bookmarks and the selected bookmark as JSON (`BrowserStoredState`).
         public static let browserState = "browserStateKey"
         public static let showBrowserTab = "showBrowserTabKey"
+        public static let showRadioTab = "showRadioTabKey"
         // Tabs
         /// Comma-separated `SectionBar.Section` ids for the optional popover/Only Control tabs.
         public static let tabOrder = "tabOrderKey"
@@ -170,7 +171,7 @@ public extension UserDefaults {
             shortcutsDic,
             orderWeight, onlyControlOrderWeight,
             soundMixerEnabled,
-            systemMonitorPreferences, showSystemMonitorTab, showXcodeCleanerTab, showAppUninstallerTab, showScreenshotsTab, showSchedulesTab, showBrowserTab, browserState, tabOrder,
+            systemMonitorPreferences, showSystemMonitorTab, showXcodeCleanerTab, showAppUninstallerTab, showScreenshotsTab, showSchedulesTab, showBrowserTab, showRadioTab, browserState, tabOrder,
             backNoisesTrack, automaticallyStopPlayNoiseTime,
             autoStopKeepAwakeMode, autoStopKeepAwakeTime, autoStopKeepAwakeStartDate, autoStopKeepAwakeEndDate, autoStopKeepAwakeOnSleep, KeepAwakeKey,
             autoDimScreenTime, dimScreenPercent, syncExternalBrightness,

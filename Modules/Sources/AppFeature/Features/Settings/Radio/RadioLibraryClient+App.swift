@@ -4,6 +4,7 @@
 //
 
 import AppKit
+import Combine
 import CoreData
 import Extensions
 import RadioBrowser
@@ -23,10 +24,16 @@ extension RadioLibraryClient {
         stopPreview: { RadioLibraryAdapter.shared.stopPreview() },
         playbackStatus: { RadioLibraryAdapter.shared.status(of: RadioStationSwitch.shared.playerItem.model) },
         playbackUpdates: {
-            AsyncStream { continuation in
+            AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
                 let task = Task { @MainActor in
-                    for await item in RadioStationSwitch.shared.playerItem.$model.values {
-                        continuation.yield(RadioLibraryAdapter.shared.status(of: item))
+                    let player = RadioStationSwitch.shared.playerItem
+                    let updates = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+                    let observation = player.$model.sink { @Sendable _ in
+                        updates.continuation.yield(())
+                    }
+                    defer { observation.cancel() }
+                    for await _ in updates.stream {
+                        continuation.yield(RadioLibraryAdapter.shared.status(of: player.model))
                     }
                     continuation.finish()
                 }
@@ -55,7 +62,13 @@ final class RadioLibraryAdapter {
     private var player: RadioPlayerItemViewModel { RadioStationSwitch.shared.playerItem }
 
     func status(of item: RadioPlayerItem?) -> RadioPlaybackStatus {
-        RadioPlaybackStatus(currentID: item?.id, isPlaying: item?.isPlaying ?? false, previewingStationID: previewingStationID)
+        RadioPlaybackStatus(
+            currentID: item?.id,
+            isPlaying: item?.isPlaying ?? false,
+            previewingStationID: previewingStationID,
+            title: item?.title ?? "",
+            streamInfo: item?.isPlaying == true ? item?.streamInfo ?? "" : ""
+        )
     }
 
     // MARK: Favorites
@@ -63,7 +76,7 @@ final class RadioLibraryAdapter {
     func favorites() throws -> [RadioFavorite] {
         try PersistenceController.shared.requireStore()
         var seen = Set<UUID>()
-        return RadioStations.fetchResult.compactMap { station in
+        return try context.fetch(RadioStations.defaultFetchRequest).compactMap { station in
             guard let id = station.id, let title = station.title, let url = station.url, seen.insert(id).inserted else { return nil }
             return RadioFavorite(
                 id: id,
@@ -103,6 +116,7 @@ final class RadioLibraryAdapter {
         guard previewingStationID == nil, player.id == id else { return }
         let wasPlaying = player.isPlaying
         if urlChanged, wasPlaying { player.isPlaying = false }
+        player.model.artworkURL = radio.favicon.flatMap(URL.init(string:))
         player.title = station.name
         player.streamUrl = station.streamURL
         if urlChanged, wasPlaying { player.isPlaying = true }
@@ -126,7 +140,9 @@ final class RadioLibraryAdapter {
     // MARK: Playback
 
     func play(_ id: UUID) {
-        guard let station = RadioStations.fetchRequest(by: id).first else { return }
+        guard Preferences.shared.radioEnable,
+              let station = RadioStations.fetchRequest(by: id).first(where: { $0.title != nil && $0.url != nil })
+        else { return }
         previewingStationID = nil
         restoreStationID = nil
         RadioStationSwitch.shared.setPlayerItem(station: station)
@@ -136,17 +152,20 @@ final class RadioLibraryAdapter {
     }
 
     func togglePlayback() {
+        guard Preferences.shared.radioEnable else { return }
         player.isPlaying.toggle()
         refreshSwitch()
     }
 
     func preview(_ station: RadioBrowserStation) {
+        guard Preferences.shared.radioEnable else { return }
         if previewingStationID == nil {
             restoreStationID = player.id
             restoreWasPlaying = player.isPlaying
         }
         previewingStationID = station.id
         if player.isPlaying { player.isPlaying = false }
+        player.model.artworkURL = station.favicon
         player.title = station.name
         player.streamUrl = station.streamURL.absoluteString
         player.streamInfo = ""
@@ -163,7 +182,7 @@ final class RadioLibraryAdapter {
         let restored = restoreStationID.flatMap { RadioStations.fetchRequest(by: $0).first } ?? RadioStations.fetchResult.first
         if let restored {
             RadioStationSwitch.shared.setPlayerItem(station: restored)
-            if restoreWasPlaying { player.isPlaying = true }
+            if restoreWasPlaying && Preferences.shared.radioEnable { player.isPlaying = true }
         }
         restoreStationID = nil
         refreshSwitch()
