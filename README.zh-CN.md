@@ -16,6 +16,16 @@
 
 OnlySwitch 将隐藏桌面图标、切换外观、防止 Mac 睡眠和隐藏刘海等常用 macOS 控件集中在一款可自定义的菜单栏应用中。你可以添加、移除或调整开关和快捷指令的顺序，为它们设置键盘快捷键，也可以通过小组件将控件放到桌面上。
 
+## OnlySwitchLocal 分支改进
+
+- 修复从 macOS 图形界面启动 OnlySwitch 时无法正常调用 Tailscale 命令行工具的问题。
+- 在菜单栏列表和 Only Control 中加入电台标签页，可播放和切换收藏电台，并调节音量。HLS 电台播放卡住时会自动尝试重连。
+- 在蓝牙就绪后才查询已配对的设备，避免阻塞应用启动。
+
+默认分支 `main` 跟随上游 OnlySwitch。上述应用改动位于 `fix/tailscale-recovery` 分支。
+
+[下载最新版 OnlySwitchLocal](https://github.com/hoogrey/OnlySwitch/releases/latest) · [对比此分支与上游的差异](https://github.com/jacklandrin/OnlySwitch/compare/main...hoogrey:fix/tailscale-recovery)
+
 <p align="center">
   <img alt="OnlySwitch 控件" src="doc/images/onlyswitch-controls.png" width="55%" />
 </p>

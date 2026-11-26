@@ -16,6 +16,16 @@
 
 OnlySwitch puts everyday macOS controls—such as hiding desktop icons, changing appearance, keeping the Mac awake, and managing the notch—into one customizable menu-bar app. Add, remove, and reorder switches and Shortcuts, assign keyboard shortcuts, or place controls on the desktop as widgets.
 
+## OnlySwitchLocal fork improvements
+
+- Fixes Tailscale CLI execution when OnlySwitch is launched from the macOS GUI.
+- Adds a Radio tab to the menu-bar list and Only Control to play and switch between favorite stations and adjust volume. Automatically retries stalled HLS streams.
+- Waits until Bluetooth is powered on before querying paired devices to avoid blocking app startup.
+
+The default `main` branch tracks upstream OnlySwitch. The fork’s app changes live on `fix/tailscale-recovery`.
+
+[Download the latest OnlySwitchLocal release](https://github.com/hoogrey/OnlySwitch/releases/latest) · [Compare the fork branch with upstream](https://github.com/jacklandrin/OnlySwitch/compare/main...hoogrey:fix/tailscale-recovery)
+
 <p align="center">
   <img alt="OnlySwitch controls" src="doc/images/onlyswitch-controls.png" width="55%" />
 </p>

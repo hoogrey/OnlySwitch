@@ -16,6 +16,16 @@
 
 OnlySwitch bündelt alltägliche macOS-Funktionen in einer anpassbaren Menüleisten-App: Schreibtischsymbole ausblenden, das Erscheinungsbild ändern, den Mac wach halten oder die Displayaussparung verbergen. Du kannst Schalter und Kurzbefehle hinzufügen, entfernen und neu anordnen, Tastenkürzel zuweisen oder Bedienelemente als Widgets auf dem Schreibtisch platzieren.
 
+## Verbesserungen im Fork OnlySwitchLocal
+
+- Behebt einen Fehler beim Aufruf der Tailscale-CLI, wenn OnlySwitch über die macOS-Oberfläche gestartet wird.
+- Ergänzt die Menüleistenliste und Only Control um einen Radio-Tab zum Abspielen und Wechseln von Favoritensendern sowie zum Einstellen der Lautstärke. Wenn ein HLS-Radiostream hängen bleibt, versucht die App automatisch, die Verbindung wiederherzustellen.
+- Fragt gekoppelte Geräte erst ab, wenn Bluetooth eingeschaltet ist, um Verzögerungen beim App-Start zu vermeiden.
+
+Der Standardbranch `main` folgt dem ursprünglichen OnlySwitch-Projekt. Die App-Änderungen des Forks liegen im Branch `fix/tailscale-recovery`.
+
+[Aktuelle OnlySwitchLocal-Version herunterladen](https://github.com/hoogrey/OnlySwitch/releases/latest) · [Fork-Branch mit dem Originalprojekt vergleichen](https://github.com/jacklandrin/OnlySwitch/compare/main...hoogrey:fix/tailscale-recovery)
+
 <p align="center">
   <img alt="Bedienelemente in OnlySwitch" src="doc/images/onlyswitch-controls.png" width="55%" />
 </p>
