@@ -21,6 +21,7 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     private var playbackID: UUID?
     private(set) var radioSession: RadioPlaybackSession?
     private let radioPresentation = RadioNowPlayingPresenter()
+    private let radioNotifications = RadioNotificationCoordinator()
     nonisolated(unsafe) private var observers: [NSObjectProtocol] = []
 
     var helperProcessIdentifier: pid_t? {
@@ -132,6 +133,12 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
         guard let url = validURL, startHelper() else {
             if radio != nil { endRadioPlayback(at: .failed) } else { item.isPlaying = false }
             return
+        }
+        if let radio {
+            radioNotifications.playbackStarted(
+                identity: .init(id: radio.id, streamURL: radio.streamUrl),
+                title: radio.title, enabled: Preferences.shared.allNotificationChangingStation
+            )
         }
         bufferring = item.type == .Radio
         send(.init(action: .play, url: url.absoluteString, isNoise: item.type == .BackNoises,

@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Dependencies
 import Extensions
 import Foundation
 
@@ -24,6 +25,8 @@ extension Preferences: RadioPlaybackPreferences {}
 class RadioSettingVM: ObservableObject {
     @Published private var preferences: any RadioPlaybackPreferences
     private var cancellables = Set<AnyCancellable>()
+    private let notifications: RadioNotificationClient
+    private(set) var notificationAuthorizationTask: Task<Bool, Never>?
 
     var soundWaveEffectDisplay: Bool {
         get {
@@ -49,8 +52,10 @@ class RadioSettingVM: ObservableObject {
             preferences.allNotificationChangingStation
         }
         set {
+            let shouldRequest = newValue && !preferences.allNotificationChangingStation
             objectWillChange.send()
             preferences.allNotificationChangingStation = newValue
+            if shouldRequest { requestNotificationAuthorization() }
         }
     }
 
@@ -59,8 +64,10 @@ class RadioSettingVM: ObservableObject {
             preferences.allNotificationTrack
         }
         set {
+            let shouldRequest = newValue && !preferences.allNotificationTrack
             objectWillChange.send()
             preferences.allNotificationTrack = newValue
+            if shouldRequest { requestNotificationAuthorization() }
         }
     }
 
@@ -73,12 +80,20 @@ class RadioSettingVM: ObservableObject {
             .store(in: &cancellables)
     }
 
-    init(preferences: any RadioPlaybackPreferences, notificationCenter: NotificationCenter) {
+    init(preferences: any RadioPlaybackPreferences, notificationCenter: NotificationCenter,
+         notifications: RadioNotificationClient? = nil) {
+        @Dependency(\.radioNotification) var notification
         self.preferences = preferences
+        self.notifications = notifications ?? notification
 
         notificationCenter.publisher(for: .volumeChange)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
+    }
+
+    private func requestNotificationAuthorization() {
+        let notifications = notifications
+        notificationAuthorizationTask = Task { await notifications.authorize() }
     }
 }

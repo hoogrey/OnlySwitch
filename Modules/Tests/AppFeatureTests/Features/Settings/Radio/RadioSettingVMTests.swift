@@ -48,6 +48,48 @@ struct RadioSettingVMTests {
         #expect(!viewModel[keyPath: viewModelKey])
     }
 
+    @Test(arguments: [Toggle.stationNotification, .trackNotification])
+    func enablingRequestsAuthorizationOnceAndDisablingDoesNot(_ toggle: Toggle) async {
+        let preferences = TestPreferences()
+        let recorder = RadioNotificationTests.Recorder()
+        let viewModel = RadioSettingVM(preferences: preferences, notificationCenter: NotificationCenter(),
+                                       notifications: recorder.client)
+        viewModel[keyPath: toggle.viewModelKey] = true
+        await viewModel.notificationAuthorizationTask?.value
+        #expect(await recorder.authorizationRequests == 1)
+
+        viewModel[keyPath: toggle.viewModelKey] = true
+        viewModel[keyPath: toggle.viewModelKey] = false
+        await viewModel.notificationAuthorizationTask?.value
+        #expect(await recorder.authorizationRequests == 1)
+        #expect(preferences[keyPath: toggle.preferencesKey] == false)
+    }
+
+    @Test func waveformDoesNotRequestNotificationAuthorization() async {
+        let recorder = RadioNotificationTests.Recorder()
+        let viewModel = RadioSettingVM(preferences: TestPreferences(), notificationCenter: NotificationCenter(),
+                                       notifications: recorder.client)
+        viewModel.soundWaveEffectDisplay = true
+        #expect(viewModel.notificationAuthorizationTask == nil)
+        #expect(await recorder.authorizationRequests == 0)
+    }
+
+    @Test(arguments: [Toggle.stationNotification, .trackNotification],
+          [RadioNotificationTests.Outcome.denied, .authorizationFailure])
+    func authorizationFailurePreservesEnabledPreference(
+        _ toggle: Toggle, _ outcome: RadioNotificationTests.Outcome
+    ) async {
+        let preferences = TestPreferences()
+        let recorder = RadioNotificationTests.Recorder(outcome: outcome)
+        let viewModel = RadioSettingVM(preferences: preferences, notificationCenter: NotificationCenter(),
+                                       notifications: recorder.client)
+        viewModel[keyPath: toggle.viewModelKey] = true
+        let authorized = await viewModel.notificationAuthorizationTask?.value
+        #expect(authorized == false)
+        #expect(preferences[keyPath: toggle.preferencesKey])
+        #expect(await recorder.authorizationRequests == 1)
+    }
+
     final class TestPreferences: RadioPlaybackPreferences {
         var soundWaveEffectDisplay = false
         var volume: Float = 1

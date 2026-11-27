@@ -6,35 +6,21 @@
 //
 
 import Foundation
-import Switches
+import Dependencies
 import OnlySwitchPersistence
 
 struct RadioPlayerItem {
     var isPlaying:Bool = false
     var title:String = ""
-    {
-        willSet {
-            guard title != newValue else {return}
-            if isPlaying &&
-                !newValue.isEmpty &&
-                Preferences.shared.allNotificationChangingStation {
-                nowPlayingNotify(content: newValue, subtitle: "")
-            }
-        }
-    }
     
     var artworkURL: URL?
     var streamUrl:String = ""
     var streamInfo:String = ""
     {
         willSet {
-            guard streamInfo != newValue else {return}
-            if isPlaying &&
-                !newValue.isEmpty &&
-                !title.isEmpty &&
-                Preferences.shared.allNotificationTrack {
-                nowPlayingNotify(content: title, subtitle: newValue)
-            }
+            @Dependency(\.radioNotification) var client
+            client.trackChanged(station: title, previousTrack: streamInfo, track: newValue,
+                                isPlaying: isPlaying, enabled: Preferences.shared.allNotificationTrack)
         }
     }
     
@@ -49,12 +35,4 @@ struct RadioPlayerItem {
         self.streamInfo = ""
     }
 
-    func nowPlayingNotify(content:String, subtitle:String) {
-        Task { @MainActor in
-            let _ = try? await displayNotificationCMD(title: "Now Playing".localized(),
-                                                      content: content,
-                                                      subtitle: subtitle)
-                .runAppleScript()
-        }
-    }
 }
