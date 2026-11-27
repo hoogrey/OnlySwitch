@@ -9,11 +9,20 @@ import Combine
 import Extensions
 import Foundation
 
+@MainActor
+protocol RadioPlaybackPreferences: AnyObject {
+    var soundWaveEffectDisplay: Bool { get set }
+    var volume: Float { get set }
+    var allNotificationChangingStation: Bool { get set }
+    var allNotificationTrack: Bool { get set }
+}
+
+extension Preferences: RadioPlaybackPreferences {}
+
 /// Playback preferences shown above the station lists. Stations themselves live in `RadioStationsFeature`.
 @MainActor
 class RadioSettingVM: ObservableObject {
-    private var preferencesPublisher = PreferencesObserver.shared
-    @Published private var preferences = PreferencesObserver.shared.preferences
+    @Published private var preferences: any RadioPlaybackPreferences
     private var cancellables = Set<AnyCancellable>()
 
     var soundWaveEffectDisplay: Bool {
@@ -21,6 +30,7 @@ class RadioSettingVM: ObservableObject {
             preferences.soundWaveEffectDisplay
         }
         set {
+            objectWillChange.send()
             preferences.soundWaveEffectDisplay = newValue
         }
     }
@@ -39,6 +49,7 @@ class RadioSettingVM: ObservableObject {
             preferences.allNotificationChangingStation
         }
         set {
+            objectWillChange.send()
             preferences.allNotificationChangingStation = newValue
         }
     }
@@ -48,17 +59,24 @@ class RadioSettingVM: ObservableObject {
             preferences.allNotificationTrack
         }
         set {
+            objectWillChange.send()
             preferences.allNotificationTrack = newValue
         }
     }
 
-    init() {
-        preferencesPublisher.$preferences.sink { [weak self] _ in
-            self?.objectWillChange.send()
-        }
-        .store(in: &cancellables)
+    convenience init() {
+        let observer = PreferencesObserver.shared
+        self.init(preferences: observer.preferences, notificationCenter: .default)
+        observer.$preferences
+            .dropFirst()
+            .sink { [weak self] preferences in self?.preferences = preferences }
+            .store(in: &cancellables)
+    }
 
-        NotificationCenter.default.publisher(for: .volumeChange)
+    init(preferences: any RadioPlaybackPreferences, notificationCenter: NotificationCenter) {
+        self.preferences = preferences
+
+        notificationCenter.publisher(for: .volumeChange)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
