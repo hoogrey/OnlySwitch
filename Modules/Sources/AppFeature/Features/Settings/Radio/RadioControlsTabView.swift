@@ -41,6 +41,20 @@ struct RadioControlsTabView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Text(playback.phase.text)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.updatesFrequently)
+
+            if playback.phase.canRetry, let sessionID = playback.sessionID {
+                Button(RadioStrings.text("Radio Retry"), systemImage: "arrow.clockwise") {
+                    store.send(.favorites(.retryPlaybackTapped(sessionID)))
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+
             if !playback.streamInfo.isEmpty {
                 Text(playback.streamInfo)
                     .font(.caption)

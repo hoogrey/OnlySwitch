@@ -16,6 +16,8 @@ public struct RadioLibraryClient: Sendable {
     public var preview: @MainActor @Sendable (RadioBrowserStation) -> Void
     /// Ends an audition and restores the selected favorite.
     public var stopPreview: @MainActor @Sendable () -> Void
+    /// Retries the current stream only if the session shown by the caller still allows it.
+    public var retryPlayback: @MainActor @Sendable (UUID) -> Void
     public var playbackStatus: @MainActor @Sendable () -> RadioPlaybackStatus
     public var playbackUpdates: @Sendable () -> AsyncStream<RadioPlaybackStatus>
     /// Returns the number of imported stations, or `nil` if the user cancelled.
@@ -33,6 +35,7 @@ public struct RadioLibraryClient: Sendable {
         togglePlayback: @escaping @MainActor @Sendable () -> Void,
         preview: @escaping @MainActor @Sendable (RadioBrowserStation) -> Void,
         stopPreview: @escaping @MainActor @Sendable () -> Void,
+        retryPlayback: @escaping @MainActor @Sendable (UUID) -> Void = { _ in },
         playbackStatus: @escaping @MainActor @Sendable () -> RadioPlaybackStatus,
         playbackUpdates: @escaping @Sendable () -> AsyncStream<RadioPlaybackStatus>,
         importStations: @escaping @MainActor @Sendable () async throws -> Int?,
@@ -41,6 +44,7 @@ public struct RadioLibraryClient: Sendable {
     ) {
         self.favorites = favorites; self.add = add; self.update = update; self.delete = delete
         self.play = play; self.togglePlayback = togglePlayback; self.preview = preview; self.stopPreview = stopPreview
+        self.retryPlayback = retryPlayback
         self.playbackStatus = playbackStatus; self.playbackUpdates = playbackUpdates
         self.importStations = importStations; self.exportStations = exportStations; self.copyToPasteboard = copyToPasteboard
     }
@@ -59,6 +63,7 @@ extension RadioLibraryClient: TestDependencyKey {
         togglePlayback: unimplemented("RadioLibraryClient.togglePlayback"),
         preview: unimplemented("RadioLibraryClient.preview"),
         stopPreview: unimplemented("RadioLibraryClient.stopPreview"),
+        retryPlayback: unimplemented("RadioLibraryClient.retryPlayback"),
         playbackStatus: unimplemented("RadioLibraryClient.playbackStatus", placeholder: RadioPlaybackStatus()),
         playbackUpdates: unimplemented("RadioLibraryClient.playbackUpdates", placeholder: .finished),
         importStations: unimplemented("RadioLibraryClient.importStations", placeholder: nil),
@@ -81,7 +86,7 @@ extension RadioLibraryClient: TestDependencyKey {
             togglePlayback: {},
             preview: { _ in },
             stopPreview: {},
-            playbackStatus: { RadioPlaybackStatus(currentID: stations.first?.id, isPlaying: true) },
+            playbackStatus: { RadioPlaybackStatus(currentID: stations.first?.id, isPlaying: true, phase: .playing) },
             playbackUpdates: { .finished },
             importStations: { 0 },
             exportStations: { true },

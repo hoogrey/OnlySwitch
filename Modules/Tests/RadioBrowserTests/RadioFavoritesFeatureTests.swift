@@ -212,6 +212,40 @@ struct RadioFavoritesFeatureTests {
         #expect(store.state.favorites.isEmpty)
     }
 
+    @Test func playbackRetryRestartsTheSamePreviewOnce() async {
+        let library = FakeRadioLibrary()
+        let sessionID = UUID()
+        var state = RadioFavoritesFeature.State()
+        state.playback = RadioPlaybackStatus(previewingStationID: "s1", phase: .failed, sessionID: sessionID)
+        library.status = state.playback
+        let store = makeStore(library, state: state)
+
+        await store.send(.retryPlaybackTapped(sessionID)).finish()
+        await store.send(.retryPlaybackTapped(sessionID)).finish()
+
+        #expect(library.retries == [sessionID])
+        #expect(library.status.phase == .connecting)
+        #expect(library.status.previewingStationID == "s1")
+        #expect(library.previewed.isEmpty)
+        #expect(library.played.isEmpty)
+    }
+
+    @Test func playbackRetryIgnoresStaleAndActiveAttempts() async {
+        let library = FakeRadioLibrary()
+        let sessionID = UUID()
+        var state = RadioFavoritesFeature.State()
+        state.playback = RadioPlaybackStatus(isPlaying: true, phase: .reconnecting(attempt: 2, total: 3), sessionID: sessionID)
+        library.status = state.playback
+        let store = makeStore(library, state: state)
+        await store.send(.retryPlaybackTapped(sessionID)).finish()
+
+        state.playback.phase = .recoveryFailed
+        library.status = state.playback
+        let failedStore = makeStore(library, state: state)
+        await failedStore.send(.retryPlaybackTapped(UUID())).finish()
+        #expect(library.retries.isEmpty)
+    }
+
     @Test func idleTitleUsesTheFavoriteThatPlayWillStart() {
         let first = RadioBrowserFixtures.favorite(1)
         let second = RadioBrowserFixtures.favorite(2)

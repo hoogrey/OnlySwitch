@@ -2,6 +2,7 @@ import AVFoundation
 import Extensions
 import Foundation
 import os
+import RadioBrowser
 
 /// Only the helper constructs audible AVFoundation players. The host retains UI, Now Playing,
 /// track navigation and user preferences, while metadata and waveform samples return over stdout.
@@ -17,10 +18,13 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     private var timeObserver: Any?
     private var lastTiming: RadioPlaybackTiming?
     private var reconnectURL: URL?
-    private var reconnect = RadioReconnect()
+    private var recovery = RadioPlaybackRecovery()
     private var reconnectTask: Task<Void, Never>?
-    private var radioHasPlayed = false
-    private var receivedStreamAudio = false
+    private var itemEndObservation: (any NSObjectProtocol)?
+    private var itemFailedEndObservation: (any NSObjectProtocol)?
+    private var lastRadioPhase: RadioPlaybackPhase?
+    private var currentItemFailed = false
+    private var currentItemEnded = false
     private var desiredPlaybackActive = false
     private var playbackID: UUID?
     private let output: FileHandle
@@ -54,10 +58,20 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
                 let path = raw.lowercased()
                 let useStreamer = command.usesWaveform == true && reconnectURL == nil && !path.hasSuffix(".m3u")
                     && !path.hasSuffix(".m3u8") && !path.hasSuffix(".aac")
+                publishRadioPhase(.connecting)
                 startRadio(url: url, muted: useStreamer)
                 if useStreamer {
                     let stream = Streamer()
                     stream.delegate = self
+                    stream.audibleObservation = StreamerAudibleObservation { [weak self, weak stream] state in
+                        guard let self, let stream, self.streamer === stream, self.desiredPlaybackActive else { return }
+                        switch state {
+                        case .buffering: self.observeRadio(.buffering)
+                        case .playing: self.observeRadio(.playing)
+                        case .ended: self.finishRadio()
+                        case .unavailable: self.fallbackToAVPlayer(from: stream)
+                        }
+                    }
                     stream.volume = volume
                     streamer = stream
                     stream.url = url
@@ -72,7 +86,7 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
             desiredPlaybackActive = false
             cancelReconnect()
             player?.pause(); noise?.pause(); streamer?.pause()
-            emit(.init(isBuffering: false))
+            if player != nil { publishRadioPhase(.paused) } else { emit(.init(isBuffering: false)) }
         case .stop:
             stop()
         case .volume:
@@ -110,55 +124,100 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
                 self.updateTiming(av)
             }
         }
-        itemObservation = item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
-            guard item.status == .failed else { return }
+        itemObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
             DispatchQueue.main.async { [weak self] in
-                guard let self, self.desiredPlaybackActive,
-                      let av = self.player, av.currentItem === item else { return }
-                if self.reconnectURL != nil {
-                    self.updateRadioStatus(av)
-                } else {
-                    self.emit(.init(isBuffering: false, hasFailed: true))
-                }
-            }
-        }
-        playbackObservation = av.observe(\.timeControlStatus, options: [.new]) { [weak self] av, _ in
-            DispatchQueue.main.async { [weak self] in
-                guard let self, self.player === av, self.desiredPlaybackActive else { return }
+                guard let self, let av = self.player, av.currentItem === item else { return }
                 self.updateRadioStatus(av)
             }
         }
+        playbackObservation = av.observe(\.timeControlStatus, options: [.new]) { [weak self] av, _ in
+            DispatchQueue.main.async { [weak self] in self?.updateRadioStatus(av) }
+        }
+        itemEndObservation = observeItem(.AVPlayerItemDidPlayToEndTime, player: av, item: item) { engine, av in
+            engine.currentItemEnded = true
+            if !av.isMuted { engine.finishRadio() }
+        }
+        itemFailedEndObservation = observeItem(.AVPlayerItemFailedToPlayToEndTime, player: av, item: item) { engine, av in
+            engine.currentItemFailed = true
+            engine.updateRadioStatus(av)
+        }
         av.volume = volume
         av.isMuted = muted
-        emit(.init(isBuffering: true))
         av.play()
-        if reconnectURL != nil { updateRadioStatus(av) }
+        updateRadioStatus(av)
+    }
+
+    private func observeItem(
+        _ name: Notification.Name,
+        player av: AVPlayer,
+        item: AVPlayerItem,
+        perform: @escaping @MainActor @Sendable (PlaybackHelperEngine, AVPlayer) -> Void
+    ) -> any NSObjectProtocol {
+        NotificationCenter.default.addObserver(forName: name, object: item, queue: .main) { [weak self, weak av] _ in
+            MainActor.assumeIsolated {
+                guard let self, let av, self.player === av, av.currentItem === item,
+                      self.desiredPlaybackActive else { return }
+                perform(self, av)
+            }
+        }
     }
 
     private func updateRadioStatus(_ av: AVPlayer) {
+        guard player === av, desiredPlaybackActive, !av.isMuted else { return }
         updateTiming(av)
-        let failed = av.currentItem?.status == .failed
-        let isBuffering = failed || av.timeControlStatus != .playing
-        guard let url = reconnectURL else {
-            emit(.init(isBuffering: isBuffering))
+        let observation: RadioPlaybackRecovery.Observation
+        if currentItemFailed || av.currentItem?.status == .failed {
+            observation = .failed
+        } else {
+            switch av.timeControlStatus {
+            case .playing: observation = .playing
+            case .waitingToPlayAtSpecifiedRate:
+                observation = av.currentItem?.status == .readyToPlay ? .buffering : .connecting
+            default:
+                observation = recovery.hasPlayed ? .interrupted : .connecting
+            }
+        }
+        observeRadio(observation, player: av)
+    }
+
+    private func observeRadio(_ observation: RadioPlaybackRecovery.Observation, player av: AVPlayer? = nil) {
+        recovery.observe(observation, allowsRetry: reconnectURL != nil)
+        if recovery.hasFailed {
+            desiredPlaybackActive = false
+            cancelReconnect()
+            publishRadioPhase(recovery.phase, failed: true)
             return
         }
 
-        if !isBuffering {
-            radioHasPlayed = true
+        let phase = recovery.phase
+        publishRadioPhase(phase)
+        guard let av, let url = reconnectURL else { return }
+        if observation != .playing, recovery.awaitsFinalResult {
+            if reconnectTask == nil { scheduleFinalResult(for: av) }
+        } else if observation == .playing || !needsReconnect(av) {
             cancelReconnect()
-            reconnect.reset()
-        } else if failed, !radioHasPlayed || reconnect.delay == nil {
-            cancelReconnect()
-            desiredPlaybackActive = false
-            emit(.init(isBuffering: false, hasFailed: true))
-            return
-        } else if !needsReconnect(av) {
-            cancelReconnect()
-        } else if radioHasPlayed, reconnectTask == nil, let delay = reconnect.delay {
+        } else if recovery.hasPlayed, reconnectTask == nil, let delay = recovery.retry.delay {
             scheduleReconnect(for: av, url: url, after: delay)
         }
-        emit(.init(isBuffering: isBuffering))
+    }
+
+    private func publishRadioPhase(_ phase: RadioPlaybackPhase, failed: Bool = false, ended: Bool = false) {
+        guard lastRadioPhase != phase || failed || ended else { return }
+        lastRadioPhase = phase
+        let buffering: Bool
+        switch phase {
+        case .connecting, .buffering, .waitingToRetry, .reconnecting: buffering = true
+        default: buffering = false
+        }
+        let timing = streamer.map { _ in RadioPlaybackTiming(isPlaying: phase == .playing || phase == .recovered) }
+        emit(.init(timing: timing, isBuffering: buffering, hasFailed: failed ? true : nil,
+                   radioPhase: phase, radioEnded: ended ? true : nil))
+    }
+
+    private func finishRadio() {
+        desiredPlaybackActive = false
+        cancelReconnect()
+        publishRadioPhase(.idle, ended: true)
     }
 
     private func updateTiming(_ av: AVPlayer) {
@@ -185,16 +244,12 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     }
 
     private func needsReconnect(_ av: AVPlayer) -> Bool {
-        av.timeControlStatus == .waitingToPlayAtSpecifiedRate || av.currentItem?.status == .failed
+        currentItemFailed || av.currentItem?.status == .failed || av.timeControlStatus == .waitingToPlayAtSpecifiedRate
     }
 
     private func scheduleReconnect(for av: AVPlayer, url: URL, after delay: Duration) {
         reconnectTask = Task { [weak self, weak av] in
-            do {
-                try await Task.sleep(for: delay)
-            } catch {
-                return
-            }
+            do { try await Task.sleep(for: delay) } catch { return }
             guard !Task.isCancelled, let self, let av, self.player === av,
                   self.desiredPlaybackActive else { return }
             self.reconnectTask = nil
@@ -202,10 +257,25 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
                 self.updateRadioStatus(av)
                 return
             }
-            self.reconnect.recordAttempt()
-            Logger.player.info("Restarting stalled HLS radio playback (attempt \(self.reconnect.attempts))")
+            self.recovery.beginAttempt()
+            self.publishRadioPhase(self.recovery.phase)
+            Logger.player.info("Restarting stalled HLS radio playback (attempt \(self.recovery.retry.attempts))")
             self.retireRadioPlayer()
             self.startRadio(url: url, muted: false)
+        }
+    }
+
+    private func scheduleFinalResult(for av: AVPlayer) {
+        reconnectTask = Task { [weak self, weak av] in
+            do { try await Task.sleep(for: RadioReconnect.finalResultDelay) } catch { return }
+            guard !Task.isCancelled, let self, let av, self.player === av, self.desiredPlaybackActive else { return }
+            self.reconnectTask = nil
+            if av.timeControlStatus == .playing {
+                self.updateRadioStatus(av)
+                return
+            }
+            self.recovery.finishWaitingForFinalResult()
+            self.publishRadioPhase(self.recovery.phase)
         }
     }
 
@@ -223,6 +293,12 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
         timeObserver = nil
         playbackObservation = nil
         itemObservation = nil
+        if let itemEndObservation { NotificationCenter.default.removeObserver(itemEndObservation) }
+        if let itemFailedEndObservation { NotificationCenter.default.removeObserver(itemFailedEndObservation) }
+        itemEndObservation = nil
+        itemFailedEndObservation = nil
+        currentItemFailed = false
+        currentItemEnded = false
         player?.pause()
         player?.replaceCurrentItem(with: nil)
         player = nil
@@ -238,13 +314,12 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     private func stop(emitStatus: Bool = true) {
         desiredPlaybackActive = false
         cancelReconnect()
-        reconnect.reset()
+        recovery = RadioPlaybackRecovery()
         reconnectURL = nil
-        radioHasPlayed = false
+        lastRadioPhase = nil
         retireRadioPlayer()
         noise?.stop()
         streamer?.dispose()
-        receivedStreamAudio = false
         noise = nil; streamer = nil
         if emitStatus { emit(.init(isBuffering: false)) }
     }
@@ -275,11 +350,23 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
     nonisolated func streamer(_ streamer: Streaming, failedDownloadWithError error: Error, forURL url: URL) {
         guard let stream = streamer as? Streamer else { return }
         Task { @MainActor [weak self] in
-            guard let self, self.streamer === stream else { return }
-            stream.dispose()
-            self.streamer = nil
-            self.player?.isMuted = false
-            if self.desiredPlaybackActive { self.emit(.init(isBuffering: false, isReady: true)) }
+            self?.fallbackToAVPlayer(from: stream)
+        }
+    }
+
+    private func fallbackToAVPlayer(from stream: Streamer) {
+        guard streamer === stream, desiredPlaybackActive else { return }
+        streamer = nil
+        stream.dispose()
+        if let player {
+            if currentItemEnded, let url = (player.currentItem?.asset as? AVURLAsset)?.url {
+                // Short media may have already ended on the silent metadata clock.
+                retireRadioPlayer()
+                startRadio(url: url, muted: false)
+            } else {
+                player.isMuted = false
+                updateRadioStatus(player)
+            }
         }
     }
 
@@ -298,11 +385,10 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
                 }
             }
         } else { samples = nil }
+        guard let samples else { return }
         Task { @MainActor [weak self] in
-            guard let self, self.streamer === stream else { return }
-            var spectra: [[Float]]?
-            if let samples,
-               let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: AVAudioChannelCount(channelCount)),
+            guard let self, self.streamer === stream, self.desiredPlaybackActive else { return }
+            if let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: AVAudioChannelCount(channelCount)),
                let copy = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(bufferSize)),
                let channels = copy.floatChannelData {
                 copy.frameLength = AVAudioFrameCount(bufferSize)
@@ -311,12 +397,7 @@ final class PlaybackHelperEngine: NSObject, @preconcurrency AVPlayerItemMetadata
                         channels[channel].update(from: source.baseAddress!, count: bufferSize)
                     }
                 }
-                spectra = self.analyzer.analyse(with: copy)
-            }
-            let firstAudio = !self.receivedStreamAudio
-            self.receivedStreamAudio = true
-            if firstAudio || spectra != nil {
-                self.emit(.init(spectra: spectra, isBuffering: false, isReady: firstAudio))
+                self.emit(.init(spectra: self.analyzer.analyse(with: copy)))
             }
         }
     }

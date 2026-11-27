@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AudioToolbox
 import os.log
 
 extension Streamer: DownloadingDelegate {
@@ -42,12 +43,17 @@ extension Streamer: DownloadingDelegate {
         
         guard let parser = parser else {
             os_log("Expected parser, bail...", log: Streamer.logger, type: .error)
+            reportUnavailablePlayback()
             return
         }
         
         /// Parse the incoming audio into packets
         do {
             try parser.parse(data: data)
+        } catch ParserError.failedToParseBytes(kAudioFileStreamError_UnsupportedDataFormat),
+                ParserError.failedToParseBytes(kAudioFileStreamError_UnsupportedFileType) {
+            reportUnavailablePlayback()
+            return
         } catch {
             os_log("Failed to parse: %@", log: Streamer.logger, type: .error, error.localizedDescription)
         }
@@ -56,6 +62,9 @@ extension Streamer: DownloadingDelegate {
         if reader == nil, let _ = parser.dataFormat {
             do {
                 reader = try Reader(parser: parser, readFormat: readFormat)
+            } catch ReaderError.unableToCreateConverter {
+                reportUnavailablePlayback()
+                return
             } catch {
                 os_log("Failed to create reader: %@", log: Streamer.logger, type: .error, error.localizedDescription)
             }

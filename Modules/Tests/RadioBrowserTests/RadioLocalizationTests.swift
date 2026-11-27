@@ -25,7 +25,10 @@ struct RadioLocalizationTests {
                 let value = try #require(unit["value"])
                 #expect(value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
                 for specifier in ["%@", "%lld"] where key.contains(specifier) {
-                    #expect(value.contains(specifier), "\(language) translation of \(key) drops \(specifier)")
+                    #expect(
+                        value.components(separatedBy: specifier).count == key.components(separatedBy: specifier).count,
+                        "\(language) translation of \(key) changes the number of \(specifier) arguments"
+                    )
                 }
             }
         }

@@ -90,6 +90,14 @@ struct OwnPlaybackSourceTests {
         #expect(decoded.isReady == true)
     }
 
+    @Test func helperDecodesReadinessFromAnOlderProcess() throws {
+        let bytes = Data(#"{"isReady":true}"#.utf8)
+        let event = try JSONDecoder().decode(PlaybackHelperEvent.self, from: bytes)
+        #expect(event.isReady == true)
+        #expect(event.playbackID == nil)
+        #expect(event.timing == nil)
+    }
+
     @Test(.disabled("Requires the app host after package migration: launches the OnlySwitch executable as the playback helper"))
     func helperProcessesShortCommandsBeforeItsInputPipeCloses() async throws {
         let executable = try #require(Bundle.main.executableURL)

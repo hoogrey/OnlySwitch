@@ -1,15 +1,14 @@
 import Foundation
 
 struct RadioReconnect {
+    private static let delays: [Duration] = [.seconds(5), .seconds(10), .seconds(20)]
+    static let totalAttempts = delays.count
+    static var finalResultDelay: Duration { delays[totalAttempts - 1] }
+
     private(set) var attempts = 0
 
     var delay: Duration? {
-        switch attempts {
-        case 0: .seconds(5)
-        case 1: .seconds(10)
-        case 2: .seconds(20)
-        default: nil
-        }
+        Self.delays.indices.contains(attempts) ? Self.delays[attempts] : nil
     }
 
     mutating func recordAttempt() {

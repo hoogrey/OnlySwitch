@@ -56,6 +56,8 @@ struct RadioStationsFeatureTests {
         await store.receive(\.favorites.favoritesLoaded)
         let status = RadioPlaybackStatus(currentID: library.favorites[0].id, isPlaying: true, previewingStationID: "s1")
         var playing = status
+        playing.phase = .recovered
+        playing.sessionID = UUID()
         playing.title = "Example Radio"
         playing.streamInfo = "Track 1"
         library.updates.continuation.yield(playing)

@@ -69,13 +69,14 @@ class Streamer: Streaming, @unchecked Sendable {
     var isDisposed: Bool { disposalState.withLock { $0 } }
 
     /// Final teardown for helper track replacement; ordinary pause/stop remain reusable.
-    func dispose() {
+    @MainActor func dispose() {
         let first = disposalState.withLock { disposed in
             guard !disposed else { return false }
             disposed = true
             return true
         }
         guard first else { return }
+        audibleObservation = nil
         stop()
         timer?.invalidate()
         timer = nil
@@ -105,9 +106,14 @@ class Streamer: Streaming, @unchecked Sendable {
     private var hasScheduledAudio = false
     private var hasReadInput = false
     private let completedInput = OSAllocatedUnfairLock(initialState: false)
+    @MainActor var audibleObservation: StreamerAudibleObservation?
 
     func markInputComplete() {
         completedInput.withLock { $0 = true }
+    }
+
+    func reportUnavailablePlayback() {
+        DispatchQueue.main.async { [weak self] in self?.audibleObservation?.report(.unavailable) }
     }
 
     // MARK: - Lifecycle
@@ -151,7 +157,7 @@ class Streamer: Streaming, @unchecked Sendable {
                     return
                 }
 
-                self?.scheduleNextBuffer()
+                MainActor.assumeIsolated { self?.scheduleNextBuffer() }
             }
 
             
@@ -212,6 +218,8 @@ class Streamer: Streaming, @unchecked Sendable {
                 try engine.start()
             } catch {
                 os_log("Failed to start engine: %@", log: Streamer.logger, type: .error, error.localizedDescription)
+                reportUnavailablePlayback()
+                return
             }
         }
         
@@ -333,10 +341,18 @@ class Streamer: Streaming, @unchecked Sendable {
 
     // MARK: - Scheduling Buffers
 
-    func scheduleNextBuffer() {
-        guard let reader, !isFileSchedulingComplete else { return }
-
+    @MainActor func scheduleNextBuffer() {
         let inputComplete = completedInput.withLock { $0 }
+        defer {
+            if state == .playing {
+                audibleObservation?.update(inputComplete: inputComplete, schedulingComplete: isFileSchedulingComplete)
+            }
+        }
+        guard !isFileSchedulingComplete else { return }
+        guard let reader else {
+            isFileSchedulingComplete = inputComplete
+            return
+        }
         let sourceFormat = reader.parser.dataFormat?.streamDescription.pointee
         let outputBufferDuration = Double(readBufferSize) / reader.readFormat.sampleRate
         // Leave a short cushion for converter priming. Once sound is scheduled, let queued
@@ -361,15 +377,22 @@ class Streamer: Streaming, @unchecked Sendable {
                 isFileSchedulingComplete = inputComplete
                 return
             }
-            playerNode.scheduleBuffer(nextBuffer)
+            if let audibleObservation {
+                audibleObservation.schedule(nextBuffer, on: playerNode)
+            } else {
+                playerNode.scheduleBuffer(nextBuffer)
+            }
             hasScheduledAudio = true
         } catch ReaderError.reachedEndOfFile, ReaderError.notEnoughData {
             // A live parser can report EOF when it has consumed all input received so far.
             // Only a completed download makes that permanent.
             isFileSchedulingComplete = inputComplete
             hasScheduledAudio = false
+        } catch ReaderError.converterFailed(kAudioConverterErr_FormatNotSupported) {
+            audibleObservation?.report(.unavailable)
         } catch {
             os_log("Cannot schedule buffer: %@", log: Streamer.logger, type: .debug, error.localizedDescription)
+            if inputComplete { audibleObservation?.report(.unavailable) }
         }
     }
 

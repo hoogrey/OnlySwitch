@@ -34,6 +34,12 @@ class RadioPlayerItemViewModel:CommonPlayerItem, ObservableObject, Identifiable 
         }
     }
     
+    /// The hosted player already stopped its backend and published the observed result.
+    func clearPlaybackIntent() {
+        model.isPlaying = false
+        model.streamInfo = ""
+    }
+
     var title:String {
         get {
             model.title

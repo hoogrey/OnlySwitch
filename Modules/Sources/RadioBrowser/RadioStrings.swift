@@ -11,6 +11,10 @@ public enum RadioStrings {
         "Radio Delete Station Title %@", "Radio Delete Station Message",
         "Radio Import", "Radio Export", "Radio Import Export Help", "Radio More",
         "Radio Previous Station", "Radio Next Station",
+        "Radio Playback Idle", "Radio Playback Connecting", "Radio Playback Buffering",
+        "Radio Playback Playing", "Radio Playback Paused", "Radio Playback Interrupted",
+        "Radio Playback Waiting To Retry %lld %lld", "Radio Playback Reconnecting %lld %lld",
+        "Radio Playback Recovered", "Radio Playback Failed", "Radio Playback Recovery Failed",
         "Radio Now Playing", "Radio Previewing", "Radio Preview", "Radio Stop Preview",
         "Radio Add To Favorites", "Radio In Favorites",
         "Radio Popular", "Radio Top Voted", "Radio Country", "Radio Tag",
@@ -52,6 +56,26 @@ public extension RadioFavoriteDraft.Issue {
         case .emptyName: RadioStrings.text("Radio Issue Empty Name")
         case .invalidURL: RadioStrings.text("Radio Issue Invalid URL")
         case .duplicateURL: RadioStrings.text("Radio Issue Duplicate URL")
+        }
+    }
+}
+
+public extension RadioPlaybackPhase {
+    var text: String {
+        switch self {
+        case .idle: RadioStrings.text("Radio Playback Idle")
+        case .connecting: RadioStrings.text("Radio Playback Connecting")
+        case .buffering: RadioStrings.text("Radio Playback Buffering")
+        case .playing: RadioStrings.text("Radio Playback Playing")
+        case .paused: RadioStrings.text("Radio Playback Paused")
+        case .interrupted: RadioStrings.text("Radio Playback Interrupted")
+        case let .waitingToRetry(attempt, total):
+            "Radio Playback Waiting To Retry %lld %lld".localizeWithFormat(arguments: attempt, total)
+        case let .reconnecting(attempt, total):
+            "Radio Playback Reconnecting %lld %lld".localizeWithFormat(arguments: attempt, total)
+        case .recovered: RadioStrings.text("Radio Playback Recovered")
+        case .failed: RadioStrings.text("Radio Playback Failed")
+        case .recoveryFailed: RadioStrings.text("Radio Playback Recovery Failed")
         }
     }
 }

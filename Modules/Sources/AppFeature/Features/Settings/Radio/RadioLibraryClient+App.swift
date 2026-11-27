@@ -22,18 +22,23 @@ extension RadioLibraryClient {
         togglePlayback: { RadioLibraryAdapter.shared.togglePlayback() },
         preview: { RadioLibraryAdapter.shared.preview($0) },
         stopPreview: { RadioLibraryAdapter.shared.stopPreview() },
-        playbackStatus: { RadioLibraryAdapter.shared.status(of: RadioStationSwitch.shared.playerItem.model) },
+        retryPlayback: { RadioLibraryAdapter.shared.retryPlayback(sessionID: $0) },
+        playbackStatus: { RadioLibraryAdapter.shared.playbackStatus() },
         playbackUpdates: {
             AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
                 let task = Task { @MainActor in
                     let player = RadioStationSwitch.shared.playerItem
                     let updates = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
-                    let observation = player.$model.sink { @Sendable _ in
-                        updates.continuation.yield(())
-                    }
+                    let observation = player.$model.map { _ in () }
+                        .merge(with: NotificationCenter.default.publisher(for: .ownPlaybackStateChanged).map { _ in () })
+                        .sink { @Sendable _ in updates.continuation.yield(()) }
                     defer { observation.cancel() }
+                    var lastStatus: RadioPlaybackStatus?
                     for await _ in updates.stream {
-                        continuation.yield(RadioLibraryAdapter.shared.status(of: player.model))
+                        let status = RadioLibraryAdapter.shared.playbackStatus()
+                        guard status != lastStatus else { continue }
+                        lastStatus = status
+                        continuation.yield(status)
                     }
                     continuation.finish()
                 }
@@ -61,13 +66,18 @@ final class RadioLibraryAdapter {
     private var context: NSManagedObjectContext { PersistenceController.shared.container.viewContext }
     private var player: RadioPlayerItemViewModel { RadioStationSwitch.shared.playerItem }
 
-    func status(of item: RadioPlayerItem?) -> RadioPlaybackStatus {
-        RadioPlaybackStatus(
-            currentID: item?.id,
-            isPlaying: item?.isPlaying ?? false,
+    func playbackStatus() -> RadioPlaybackStatus {
+        guard let item = player.model else { return RadioPlaybackStatus() }
+        let hosted = PlayerManager.shared.player as? HostedAudioPlayer
+        let session = hosted?.radioSession.flatMap { $0.matches(item) ? $0 : nil }
+        return RadioPlaybackStatus(
+            currentID: item.id,
+            isPlaying: item.isPlaying,
             previewingStationID: previewingStationID,
-            title: item?.title ?? "",
-            streamInfo: item?.isPlaying == true ? item?.streamInfo ?? "" : ""
+            title: item.title,
+            streamInfo: item.isPlaying ? item.streamInfo : "",
+            phase: session?.phase ?? .idle,
+            sessionID: session?.id
         )
     }
 
@@ -154,6 +164,15 @@ final class RadioLibraryAdapter {
     func togglePlayback() {
         guard Preferences.shared.radioEnable else { return }
         player.isPlaying.toggle()
+        refreshSwitch()
+    }
+
+    func retryPlayback(sessionID: UUID) {
+        guard Preferences.shared.radioEnable else { return }
+        let status = playbackStatus()
+        guard status.sessionID == sessionID, status.phase.canRetry else { return }
+        // Restart the selected favorite or audition in place, keeping the audition's restore target.
+        player.isPlaying = true
         refreshSwitch()
     }
 

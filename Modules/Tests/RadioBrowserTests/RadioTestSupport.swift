@@ -14,6 +14,7 @@ final class FakeRadioLibrary {
     private(set) var deleted: [UUID] = []
     private(set) var played: [UUID] = []
     private(set) var toggles = 0
+    private(set) var retries: [UUID] = []
     private(set) var previewed: [String] = []
     private(set) var stopPreviews = 0
     private(set) var copied: [String] = []
@@ -55,6 +56,12 @@ final class FakeRadioLibrary {
             togglePlayback: { [self] in toggles += 1 },
             preview: { [self] in previewed.append($0.id) },
             stopPreview: { [self] in stopPreviews += 1 },
+            retryPlayback: { [self] sessionID in
+                guard status.sessionID == sessionID, status.phase.canRetry else { return }
+                retries.append(sessionID)
+                status.phase = .connecting
+                status.sessionID = UUID()
+            },
             playbackStatus: { [self] in status },
             playbackUpdates: { [stream = updates.stream] in stream },
             importStations: { [self] in

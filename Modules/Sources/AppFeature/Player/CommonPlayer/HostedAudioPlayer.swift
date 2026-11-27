@@ -3,6 +3,7 @@ import AVFoundation
 import Foundation
 import Darwin
 import MediaPlayer
+import RadioBrowser
 import Switches
 
 /// Legacy AudioPlayer callers are main-thread UI code. Playback itself lives in a child
@@ -18,6 +19,7 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     private(set) var helperGeneration: UUID?
     private var isVisible = false
     private var playbackID: UUID?
+    private(set) var radioSession: RadioPlaybackSession?
     private let radioPresentation = RadioNowPlayingPresenter()
     nonisolated(unsafe) private var observers: [NSObjectProtocol] = []
 
@@ -110,19 +112,27 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     }
 
     func play(stream item: CommonPlayerItem) {
-        guard let url = item.url, url.absoluteString.utf8.count <= 8_192,
-              ["http", "https", "file"].contains(url.scheme?.lowercased() ?? "") else {
-            item.isPlaying = false
-            return
+        let radio = item as? RadioPlayerItemViewModel
+        let url = item.url
+        let validURL = url.flatMap { url in
+            url.absoluteString.utf8.count <= 8_192
+                && ["http", "https", "file"].contains(url.scheme?.lowercased() ?? "") ? url : nil
         }
+        if radio == nil, validURL == nil { item.isPlaying = false; return }
         if let previous = currentPlayerItem, previous !== item {
             previous.isPlaying = false
             previous.trackInfo = ""
         }
         currentPlayerItem = item
-        guard startHelper() else { bufferring = false; item.isPlaying = false; return }
         let playbackID = UUID()
         self.playbackID = playbackID
+        radioSession = radio.map {
+            .init(id: playbackID, stationID: $0.id, streamURL: $0.streamUrl, phase: .connecting)
+        }
+        guard let url = validURL, startHelper() else {
+            if radio != nil { endRadioPlayback(at: .failed) } else { item.isPlaying = false }
+            return
+        }
         bufferring = item.type == .Radio
         send(.init(action: .play, url: url.absoluteString, isNoise: item.type == .BackNoises,
                    volume: Preferences.shared.volume, usesWaveform: Preferences.shared.soundWaveEffectDisplay,
@@ -149,18 +159,32 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     }
 
     func pause() {
-        playbackID = nil
-        radioPresentation.stop()
-        send(.init(action: .pause))
-        bufferring = false
-        pauseCommandCenter()
-        NotificationCenter.default.post(name: .ownPlaybackStateChanged, object: nil)
+        markRadioPaused()
+        halt(.pause)
     }
 
     func stop() {
+        markRadioPaused()
+        halt(.stop)
+    }
+
+    private func markRadioPaused() {
+        guard let radio = currentPlayerItem as? RadioPlayerItemViewModel,
+              radioSession?.matches(radio.model) == true else { return }
+        radioSession?.phase = .paused
+    }
+
+    private func endRadioPlayback(at phase: RadioPlaybackPhase) {
+        radioSession?.phase = phase
+        (currentPlayerItem as? RadioPlayerItemViewModel)?.clearPlaybackIntent()
+        halt(.stop)
+        NotificationCenter.default.post(name: .refreshSingleSwitchStatus, object: SwitchType.radioStation)
+    }
+
+    private func halt(_ action: PlaybackHelperCommand.Action) {
         playbackID = nil
         radioPresentation.stop()
-        send(.init(action: .stop))
+        send(.init(action: action))
         bufferring = false
         pauseCommandCenter()
         NotificationCenter.default.post(name: .ownPlaybackStateChanged, object: nil)
@@ -188,12 +212,23 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
                 self.commandInput = nil
                 self.process = nil
                 self.helperGeneration = nil
+                if let active = PlayerManager.shared.player as? HostedAudioPlayer, active === self,
+                   self.playbackID != nil, self.currentPlayerItem?.isPlaying == true {
+                    if self.currentPlayerItem?.type == .Radio {
+                        let phase: RadioPlaybackPhase
+                        switch self.radioSession?.phase {
+                        case .reconnecting, .waitingToRetry, .recoveryFailed: phase = .recoveryFailed
+                        case .playing, .recovered, .interrupted: phase = .interrupted
+                        default: phase = .failed
+                        }
+                        self.endRadioPlayback(at: phase)
+                    } else {
+                        self.currentPlayerItem?.isPlaying = false
+                    }
+                }
                 self.playbackID = nil
                 self.radioPresentation.invalidate()
                 self.bufferring = false
-                if let active = PlayerManager.shared.player as? HostedAudioPlayer, active === self {
-                    self.currentPlayerItem?.isPlaying = false
-                }
                 NotificationCenter.default.post(name: .ownPlaybackStateChanged, object: nil)
             }
         }
@@ -214,23 +249,30 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
             guard let event = try? JSONDecoder().decode(PlaybackHelperEvent.self, from: data) else { return }
             DispatchQueue.main.async { [weak self] in
                 guard let self, self.helperGeneration == generation else { return }
-                guard event.playbackID == nil || event.playbackID == self.playbackID else { return }
+                guard let eventID = event.playbackID else {
+                    if event.isReady == true {
+                        NotificationCenter.default.post(name: .ownPlaybackStateChanged, object: nil)
+                    }
+                    return
+                }
+                guard eventID == self.playbackID else { return }
                 self.radioPresentation.receive(event)
+                let phaseChanged = self.radioSession?.receive(event) == true
                 if let info = event.trackInfo {
                     self.currentPlayerItem?.trackInfo = info
                 }
                 if let spectra = event.spectra {
                     NotificationCenter.default.post(name: .spectra, object: spectra)
                 }
-                if let buffering = event.isBuffering {
-                    let changed = self.bufferring != buffering
-                    self.bufferring = buffering
-                    if changed { NotificationCenter.default.post(name: .ownPlaybackStateChanged, object: nil) }
-                }
-                if event.isReady == true {
+                let bufferingChanged = event.isBuffering.map { $0 != self.bufferring } ?? false
+                if let buffering = event.isBuffering { self.bufferring = buffering }
+                if let phase = event.radioPhase, event.hasFailed == true || event.radioEnded == true {
+                    self.endRadioPlayback(at: phase)
+                } else if event.hasFailed == true {
+                    self.currentPlayerItem?.isPlaying = false
+                } else if phaseChanged || bufferingChanged || event.isReady == true {
                     NotificationCenter.default.post(name: .ownPlaybackStateChanged, object: nil)
                 }
-                if event.hasFailed == true { self.currentPlayerItem?.isPlaying = false }
             }
         }, onEnd: { [weak self] in
             DispatchQueue.main.async { [weak self] in

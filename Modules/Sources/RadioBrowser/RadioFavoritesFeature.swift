@@ -22,7 +22,8 @@ public struct RadioFavoritesFeature {
         public init() {}
 
         public var stationTitle: String? {
-            if playback.isPlaying || playback.previewingStationID != nil {
+            if playback.isPlaying || playback.previewingStationID != nil
+                || (playback.sessionID != nil && playback.phase != .idle) {
                 return playback.title.isEmpty ? nil : playback.title
             }
             return favorites.first { $0.id == playback.currentID }?.name ?? favorites.first?.name
@@ -57,6 +58,7 @@ public struct RadioFavoritesFeature {
         case previousStationTapped
         case nextStationTapped
         case togglePlaybackTapped
+        case retryPlaybackTapped(UUID)
         case copyURLTapped(UUID)
         case importTapped
         case exportTapped
@@ -174,6 +176,12 @@ public struct RadioFavoritesFeature {
                     } else if let first = favorites.first {
                         library.play(first.id)
                     }
+                }
+
+            case let .retryPlaybackTapped(sessionID):
+                guard state.playback.sessionID == sessionID, state.playback.phase.canRetry else { return .none }
+                return .run { @MainActor [library] _ in
+                    library.retryPlayback(sessionID)
                 }
 
             case let .copyURLTapped(id):

@@ -1,4 +1,5 @@
 import Foundation
+import RadioBrowser
 
 /// A bounded, newline-delimited protocol carried only over this app's child-process pipes.
 struct PlaybackHelperCommand: Codable, Sendable {
@@ -27,6 +28,8 @@ struct PlaybackHelperEvent: Codable, Sendable {
     var isBuffering: Bool?
     var isReady: Bool?
     var hasFailed: Bool?
+    var radioPhase: RadioPlaybackPhase?
+    var radioEnded: Bool?
     var playbackID: UUID?
 }
 

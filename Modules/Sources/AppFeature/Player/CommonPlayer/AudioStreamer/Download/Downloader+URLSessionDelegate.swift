@@ -23,6 +23,11 @@ extension Downloader: URLSessionDataDelegate {
 
         totalBytesCount = response.expectedContentLength
 //        print("totalBytesCount:\(totalBytesCount)")
+        if let response = response as? HTTPURLResponse, !(200..<300).contains(response.statusCode) {
+            delegate?.download(self, completedWithError: URLError(.badServerResponse))
+            completionHandler(.cancel)
+            return
+        }
         let mimeType = response.mimeType
         Logger.player.debug("mimeType: \(String(describing: mimeType))")
         if let mimeType = mimeType, !supportFormat.contains(mimeType) {
@@ -55,11 +60,6 @@ extension Downloader: URLSessionDataDelegate {
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         os_log("%@ - %d", log: Downloader.logger, type: .debug, #function, #line)
-        var networkError = error
-        let statusCode = (task.response as? HTTPURLResponse)?.statusCode
-        if networkError == nil && statusCode != 200 {
-            networkError = NSError(domain:"", code: statusCode ?? 0, userInfo: nil)
-        }
         state = .completed
         delegate?.download(self, completedWithError: error)
         completionHandler?(error)

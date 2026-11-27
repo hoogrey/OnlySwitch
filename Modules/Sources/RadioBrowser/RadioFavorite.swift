@@ -86,19 +86,25 @@ public struct RadioPlaybackStatus: Equatable, Sendable {
 
     public var title: String
     public var streamInfo: String
+    public var phase: RadioPlaybackPhase
+    public var sessionID: UUID?
 
     public init(
         currentID: UUID? = nil,
         isPlaying: Bool = false,
         previewingStationID: String? = nil,
         title: String = "",
-        streamInfo: String = ""
+        streamInfo: String = "",
+        phase: RadioPlaybackPhase = .idle,
+        sessionID: UUID? = nil
     ) {
         self.currentID = currentID
         self.isPlaying = isPlaying
         self.previewingStationID = previewingStationID
         self.title = title
         self.streamInfo = streamInfo
+        self.phase = phase
+        self.sessionID = sessionID
     }
 }
 
