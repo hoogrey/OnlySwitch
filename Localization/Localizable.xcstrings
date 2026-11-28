@@ -398,6 +398,131 @@
         }
       }
     },
+    "Accessibility" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zpřístupnění"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedienungshilfen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accesibilidad"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibilité"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pristupačnost"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibilità"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "손쉬운 사용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toegankelijkheid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dostępność"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acessibilidade"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Универсальный доступ"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prístupnosť"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helitaan"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erişilebilirlik"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступність"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辅助功能"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輔助使用"
+          }
+        }
+      }
+    },
     "Acoustic" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -52991,6 +53116,131 @@
         }
       }
     },
+    "Features & Permissions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funkce a oprávnění"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funktionen und Berechtigungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Features & Permissions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funciones y permisos"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mga Feature at Pahintulot"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonctionnalités et autorisations"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Značajke i dopuštenja"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funzioni e permessi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "機能と権限"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기능 및 권한"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Functies en bevoegdheden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funkcje i uprawnienia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recursos e permissões"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Функции и разрешения"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funkcie a povolenia"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Astaamaha iyo Oggolaanshaha"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Özellikler ve İzinler"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Функції та дозволи"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "功能与权限"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "功能與權限"
+          }
+        }
+      }
+    },
     "Finish signing in in your browser. Usage refreshes automatically afterwards." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -67766,6 +68016,131 @@
         }
       }
     },
+    "Open Accessibility Settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřít nastavení zpřístupnění"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedienungshilfen öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Accessibility Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de accesibilidad"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buksan ang Accessibility Settings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les réglages d’accessibilité"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otvori postavke pristupačnosti"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri impostazioni Accessibilità"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ設定を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "손쉬운 사용 설정 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open instellingen voor toegankelijkheid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz ustawienia dostępności"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de Acessibilidade"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть настройки универсального доступа"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otvoriť nastavenia prístupnosti"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fur dejimaha Helitaanka"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erişilebilirlik ayarlarını aç"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити параметри доступності"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开辅助功能设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟輔助使用設定"
+          }
+        }
+      }
+    },
     "Open Item" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -67887,6 +68262,131 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打開"
+          }
+        }
+      }
+    },
+    "Open Screen Recording Settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřít nastavení záznamu obrazovky"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildschirmaufnahme-Einstellungen öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Screen Recording Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de grabación de pantalla"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buksan ang Screen Recording Settings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les réglages d’enregistrement de l’écran"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otvori postavke snimanja zaslona"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri impostazioni Registrazione schermo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面収録設定を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화면 기록 설정 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open instellingen voor schermopname"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz ustawienia nagrywania ekranu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de Gravação de Tela"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть настройки записи экрана"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otvoriť nastavenia nahrávania obrazovky"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fur dejimaha Duubista Shaashadda"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekran Kaydı ayarlarını aç"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити параметри запису екрана"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开屏幕录制设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟螢幕錄製設定"
           }
         }
       }
@@ -70268,6 +70768,506 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Per-process network usage is unavailable through public macOS APIs."
+          }
+        }
+      }
+    },
+    "Permission needs checking" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je třeba zkontrolovat"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prüfung erforderlich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Needs checking"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requiere comprobación"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kailangang suriin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification nécessaire"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potrebna je provjera"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da verificare"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認が必要"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인 필요"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controle nodig"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymaga sprawdzenia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Precisa de verificação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Требуется проверка"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treba skontrolovať"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waxay u baahan tahay hubin"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrol gerekli"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потрібна перевірка"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要检查"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要檢查"
+          }
+        }
+      }
+    },
+    "Permission settings open failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavení systému se nepodařilo otevřít. V Nastavení systému otevřete Soukromí a zabezpečení a vyberte příslušné oprávnění."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Systemeinstellungen konnten nicht geöffnet werden. Öffne dort Datenschutz & Sicherheit und wähle die betreffende Berechtigung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not open System Settings. Open Privacy & Security in System Settings and select the relevant permission."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo abrir Ajustes del Sistema. Abre Privacidad y seguridad en Ajustes del Sistema y selecciona el permiso correspondiente."
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hindi mabuksan ang System Settings. Buksan ang Privacy & Security sa System Settings at piliin ang kaukulang pahintulot."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’ouvrir Réglages Système. Ouvrez Confidentialité et sécurité dans Réglages Système, puis sélectionnez l’autorisation concernée."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nije moguće otvoriti Postavke sustava. U Postavkama sustava otvorite Privatnost i sigurnost te odaberite odgovarajuće dopuštenje."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile aprire Impostazioni di Sistema. Apri Privacy e sicurezza nelle Impostazioni di Sistema e seleziona il permesso pertinente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定を開けませんでした。システム設定の「プライバシーとセキュリティ」を開き、該当する権限を選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 설정을 열 수 없습니다. 시스템 설정에서 개인정보 보호 및 보안을 열고 해당 권한을 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeeminstellingen kon niet worden geopend. Open Privacy en beveiliging in Systeeminstellingen en selecteer de betreffende bevoegdheid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można otworzyć Ustawień systemowych. Otwórz Prywatność i ochrona w Ustawieniach systemowych i wybierz odpowiednie uprawnienie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível abrir os Ajustes do Sistema. Abra Privacidade e Segurança nos Ajustes do Sistema e selecione a permissão correspondente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось открыть Системные настройки. Откройте «Конфиденциальность и безопасность» в Системных настройках и выберите нужное разрешение."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavenia systému sa nepodarilo otvoriť. V Nastaveniach systému otvorte Súkromie a bezpečnosť a vyberte príslušné povolenie."
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lama furi karin Dejimaha Nidaamka. Ka fur Asturnaanta iyo Ammaanka Dejimaha Nidaamka, kadibna dooro oggolaanshaha ku habboon."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem Ayarları açılamadı. Sistem Ayarları’nda Gizlilik ve Güvenlik bölümünü açıp ilgili izni seçin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося відкрити Системні параметри. Відкрийте «Приватність і безпека» в Системних параметрах і виберіть потрібний дозвіл."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法打开系统设置。请在系统设置中打开“隐私与安全性”，然后选择相应权限。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法開啟系統設定。請在系統設定中開啟「隱私權與安全性」，然後選擇相應權限。"
+          }
+        }
+      }
+    },
+    "Permission status explanation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stav oprávnění hlásí macOS a nepotvrzuje, že funkce funguje."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Berechtigungsstatus wird von macOS gemeldet und bestätigt nicht die Funktionstüchtigkeit."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permission status is reported by macOS and does not confirm that a feature works."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS comunica el estado de los permisos, pero esto no confirma que una función funcione."
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniuulat ng macOS ang katayuan ng pahintulot at hindi nito kinukumpirmang gumagana ang feature."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’état des autorisations est fourni par macOS et ne garantit pas le fonctionnement d’une fonctionnalité."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stanje dopuštenja prijavljuje macOS i ono ne potvrđuje da značajka radi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo stato dei permessi è fornito da macOS e non conferma il funzionamento della funzione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "権限の状態は macOS による報告であり、機能の動作を保証するものではありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "권한 상태는 macOS가 보고하며 기능의 정상 작동을 보장하지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bevoegdheidsstatus wordt door macOS gemeld en bevestigt niet dat een functie werkt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stan uprawnień jest podawany przez macOS i nie potwierdza działania funkcji."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O estado das permissões é informado pelo macOS e não confirma que o recurso funciona."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Состояние разрешений сообщает macOS; оно не подтверждает работоспособность функции."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stav povolení hlási macOS a nepotvrdzuje, že funkcia funguje."
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xaaladda oggolaanshaha waxaa soo sheega macOS mana xaqiijiso in astaantu shaqaynayso."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İzin durumu macOS tarafından bildirilir ve özelliğin çalıştığını doğrulamaz."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стан дозволів повідомляє macOS; він не підтверджує працездатність функції."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "权限状态由 macOS 报告，并不代表功能一定正常。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "權限狀態由 macOS 回報，並不代表功能一定正常。"
+          }
+        }
+      }
+    },
+    "Permission troubleshooting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokud se přístup jeví jako zapnutý, ale funkce stále nefunguje, ukončete OnlySwitch a ověřte, zda položka v Nastavení systému odpovídá této nainstalované kopii. Po nahrazení nebo novém podepsání aplikace může být nutné ručně odstranit starou položku a přidat současnou aplikaci. Poté znovu otevřete OnlySwitch a proveďte kontrolu."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn der Zugriff aktiviert erscheint, die Funktion aber nicht funktioniert, beende OnlySwitch und prüfe, ob der Eintrag in den Systemeinstellungen dieser installierten Kopie entspricht. Nach dem Ersetzen oder erneuten Signieren der App musst du möglicherweise den alten Eintrag manuell entfernen und die aktuelle App hinzufügen. Öffne OnlySwitch danach erneut und prüfe noch einmal."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If access appears enabled but the feature still fails, quit OnlySwitch and check that the entry in System Settings matches this installed copy. After replacing or re-signing the app, you may need to remove its old entry and add the current app manually, then reopen OnlySwitch and recheck."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si el acceso parece activado pero la función sigue fallando, cierra OnlySwitch y comprueba que la entrada de Ajustes del Sistema corresponde a esta copia instalada. Después de sustituir o volver a firmar la app, quizá debas eliminar manualmente la entrada anterior y añadir la app actual; vuelve a abrir OnlySwitch y compruébalo de nuevo."
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kung mukhang naka-enable ang access ngunit hindi pa rin gumagana ang feature, isara ang OnlySwitch at tiyaking tumutugma ang entry sa System Settings sa naka-install na kopyang ito. Pagkatapos palitan o muling lagdaan ang app, maaaring kailanganing manu-manong alisin ang lumang entry at idagdag ang kasalukuyang app, saka muling buksan ang OnlySwitch at suriin."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si l’accès semble activé mais que la fonctionnalité échoue, quittez OnlySwitch et vérifiez que l’entrée dans Réglages Système correspond à cette copie installée. Après remplacement ou nouvelle signature de l’application, vous devrez peut-être supprimer manuellement l’ancienne entrée et ajouter l’application actuelle, puis rouvrir OnlySwitch et vérifier à nouveau."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ako se čini da je pristup uključen, ali značajka i dalje ne radi, zatvorite OnlySwitch i provjerite odgovara li stavka u Postavkama sustava ovoj instaliranoj kopiji. Nakon zamjene ili ponovnog potpisivanja aplikacije možda ćete morati ručno ukloniti staru stavku i dodati trenutačnu aplikaciju, a zatim ponovno otvoriti OnlySwitch i provjeriti."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se l’accesso sembra attivo ma la funzione non funziona, chiudi OnlySwitch e verifica che la voce nelle Impostazioni di Sistema corrisponda a questa copia installata. Dopo aver sostituito o firmato nuovamente l’app, potresti dover rimuovere manualmente la vecchia voce e aggiungere l’app attuale; riapri OnlySwitch e controlla di nuovo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセスが有効に見えても機能しない場合は、OnlySwitch を終了し、システム設定の項目が現在インストールされているコピーに対応しているか確認してください。アプリを置き換えたり再署名した後は、古い項目を手動で削除して現在のアプリを追加し、OnlySwitch を再起動して再確認する必要がある場合があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "접근이 활성화된 것처럼 보이지만 기능이 작동하지 않으면 OnlySwitch를 종료하고 시스템 설정의 항목이 현재 설치된 복사본과 일치하는지 확인하세요. 앱을 교체하거나 다시 서명한 후에는 이전 항목을 수동으로 제거하고 현재 앱을 추가한 다음 OnlySwitch를 다시 열어 확인해야 할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als toegang ingeschakeld lijkt maar de functie niet werkt, sluit OnlySwitch dan af en controleer of de vermelding in Systeeminstellingen overeenkomt met deze geïnstalleerde kopie. Na vervanging of opnieuw ondertekenen van de app moet je mogelijk de oude vermelding handmatig verwijderen en de huidige app toevoegen. Open OnlySwitch opnieuw en controleer nogmaals."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeśli dostęp wygląda na włączony, ale funkcja nadal nie działa, zamknij OnlySwitch i sprawdź, czy wpis w Ustawieniach systemowych odpowiada tej zainstalowanej kopii. Po zastąpieniu lub ponownym podpisaniu aplikacji może być konieczne ręczne usunięcie starego wpisu i dodanie obecnej aplikacji, a następnie ponowne otwarcie OnlySwitch i sprawdzenie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se o acesso parecer ativado, mas o recurso ainda falhar, encerre o OnlySwitch e confira se a entrada nos Ajustes do Sistema corresponde a esta cópia instalada. Após substituir ou assinar novamente o app, talvez seja necessário remover manualmente a entrada antiga e adicionar o app atual. Reabra o OnlySwitch e verifique novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если доступ выглядит включённым, но функция не работает, завершите OnlySwitch и убедитесь, что запись в Системных настройках соответствует установленной копии. После замены или повторной подписи приложения может потребоваться вручную удалить старую запись и добавить текущее приложение, затем снова открыть OnlySwitch и повторить проверку."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ak sa prístup javí ako zapnutý, ale funkcia stále nefunguje, ukončite OnlySwitch a overte, či položka v Nastaveniach systému zodpovedá tejto nainštalovanej kópii. Po nahradení alebo opätovnom podpísaní aplikácie môže byť potrebné ručne odstrániť starú položku a pridať aktuálnu aplikáciu. Potom znovu otvorte OnlySwitch a skontrolujte stav."
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haddii gelitaanku u muuqdo mid furan balse astaantu weli shaqayn weydo, xir OnlySwitch oo hubi in gelinta Dejimaha Nidaamku la mid tahay nuqulkan rakiban. Ka dib beddelidda ama dib u saxiixidda abka, waxaa laga yaabaa inaad gacanta ku saarto gelintii hore oo aad ku darto abka hadda jira, kadibna dib u fur OnlySwitch oo hubi."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erişim açık görünüyor ancak özellik hâlâ çalışmıyorsa OnlySwitch’i kapatın ve Sistem Ayarları’ndaki kaydın yüklü bu kopyayla eşleştiğini kontrol edin. Uygulamayı değiştirdikten veya yeniden imzaladıktan sonra eski kaydı elle silip mevcut uygulamayı eklemeniz, ardından OnlySwitch’i yeniden açıp kontrol etmeniz gerekebilir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Якщо доступ начебто ввімкнено, але функція не працює, закрийте OnlySwitch і перевірте, чи відповідає запис у Системних параметрах цій установленій копії. Після заміни або повторного підписання програми може знадобитися вручну видалити старий запис і додати поточну програму, потім знову відкрити OnlySwitch і перевірити."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果权限看似已开启但功能仍无法使用，请退出 OnlySwitch，检查系统设置中的条目是否对应当前安装的副本。替换或重新签名应用后，可能需要手动移除旧条目并添加当前应用，然后重新打开 OnlySwitch 并检查。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果權限看似已開啟但功能仍無法使用，請結束 OnlySwitch，檢查系統設定中的項目是否對應目前安裝的副本。替換或重新簽署 App 後，可能需要手動移除舊項目並加入目前的 App，然後重新開啟 OnlySwitch 並檢查。"
           }
         }
       }
@@ -82633,6 +83633,131 @@
         }
       }
     },
+    "Recheck permissions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Znovu zkontrolovat oprávnění"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berechtigungen erneut prüfen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recheck permissions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a comprobar permisos"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suriin muli ang mga pahintulot"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revérifier les autorisations"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponovno provjeri dopuštenja"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricontrolla i permessi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "権限を再確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "권한 다시 확인"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bevoegdheden opnieuw controleren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź uprawnienia ponownie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar permissões novamente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить разрешения снова"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Znova skontrolovať povolenia"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dib u hubi oggolaanshaha"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İzinleri yeniden kontrol et"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірити дозволи знову"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新检查权限"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新檢查權限"
+          }
+        }
+      }
+    },
     "Rectangle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -94120,6 +95245,131 @@
         }
       }
     },
+    "Screen Recording" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Záznam obrazovky"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildschirmaufnahme"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Recording"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabación de pantalla"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagre-record ng Screen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement de l’écran"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snimanje zaslona"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrazione schermo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面収録"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화면 기록"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schermopname"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie ekranu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravação de tela"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись экрана"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nahrávanie obrazovky"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duubista Shaashadda"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekran Kaydı"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запис екрана"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "屏幕录制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "螢幕錄製"
+          }
+        }
+      }
+    },
     "Screen Recording Accessibility Label" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -94479,6 +95729,256 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "屏幕检测与清洁"
+          }
+        }
+      }
+    },
+    "Screen cleaning permission help" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test a čištění obrazovky se nepodařilo spustit. Otevřete nastavení zpřístupnění, povolte tuto kopii OnlySwitch, vraťte se a zkuste to znovu. Pokud se přístup již jeví jako zapnutý, vyhledejte pomoc v části Funkce a oprávnění."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildschirmtest und -reinigung konnte nicht gestartet werden. Öffne die Bedienungshilfen und erlaube diese Kopie von OnlySwitch. Kehre dann zurück und versuche es erneut. Falls der Zugriff bereits aktiviert erscheint, findest du Hilfe unter Funktionen und Berechtigungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Test & Clean could not start. Open Accessibility settings and allow this copy of OnlySwitch, then return and try again. If access already appears enabled, see Features & Permissions for troubleshooting."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar la prueba y limpieza de pantalla. Abre los ajustes de accesibilidad y permite esta copia de OnlySwitch; luego vuelve a intentarlo. Si el acceso ya parece activado, consulta Funciones y permisos para solucionar el problema."
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hindi masimulan ang Screen Test & Clean. Buksan ang Accessibility settings at payagan ang kopyang ito ng OnlySwitch, pagkatapos ay bumalik at subukan muli. Kung mukhang naka-enable na ang access, tingnan ang Mga Feature at Pahintulot para sa pag-troubleshoot."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le test et nettoyage de l’écran n’a pas pu démarrer. Ouvrez les réglages d’accessibilité et autorisez cette copie d’OnlySwitch, puis revenez et réessayez. Si l’accès semble déjà activé, consultez Fonctionnalités et autorisations pour le dépannage."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testiranje i čišćenje zaslona nije se moglo pokrenuti. Otvorite postavke pristupačnosti i dopustite ovu kopiju OnlySwitcha, zatim se vratite i pokušajte ponovno. Ako je pristup već uključen, pogledajte upute u odjeljku Značajke i dopuštenja."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile avviare il test e la pulizia dello schermo. Apri le impostazioni Accessibilità e autorizza questa copia di OnlySwitch, quindi torna e riprova. Se l’accesso sembra già attivo, consulta Funzioni e permessi per la risoluzione dei problemi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面テストと清掃を開始できませんでした。アクセシビリティ設定を開き、このコピーの OnlySwitch を許可してから戻って再試行してください。既に有効に見える場合は、「機能と権限」の対処方法を参照してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화면 테스트 및 청소를 시작할 수 없습니다. 손쉬운 사용 설정을 열어 이 OnlySwitch 복사본을 허용한 다음 돌아와 다시 시도하세요. 이미 활성화된 것처럼 보이면 기능 및 권한에서 문제 해결 방법을 확인하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schermtest en -reiniging kon niet worden gestart. Open de toegankelijkheidsinstellingen en sta deze kopie van OnlySwitch toe. Keer terug en probeer opnieuw. Als toegang al ingeschakeld lijkt, raadpleeg dan Functies en bevoegdheden voor probleemoplossing."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można uruchomić testu i czyszczenia ekranu. Otwórz ustawienia dostępności i zezwól na dostęp tej kopii OnlySwitch, a następnie wróć i spróbuj ponownie. Jeśli dostęp wygląda na włączony, sprawdź wskazówki w sekcji Funkcje i uprawnienia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível iniciar o teste e limpeza da tela. Abra os ajustes de Acessibilidade e permita esta cópia do OnlySwitch; depois volte e tente novamente. Se o acesso já parecer ativado, consulte Recursos e permissões para solucionar o problema."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось запустить проверку и очистку экрана. Откройте настройки универсального доступа и разрешите доступ этой копии OnlySwitch, затем вернитесь и повторите попытку. Если доступ уже включён, см. рекомендации в разделе «Функции и разрешения»."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test a čistenie obrazovky sa nepodarilo spustiť. Otvorte nastavenia prístupnosti a povoľte túto kópiu OnlySwitch, potom sa vráťte a skúste to znova. Ak sa prístup už javí ako zapnutý, pomoc nájdete v časti Funkcie a povolenia."
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tijaabinta iyo nadiifinta shaashadda lama bilaabi karin. Fur dejimaha Helitaanka oo oggolow nuqulkan OnlySwitch, kadibna soo noqo oo mar kale isku day. Haddii gelitaanku hore u muuqdo mid furan, ka eeg caawinta Astaamaha iyo Oggolaanshaha."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekran testi ve temizliği başlatılamadı. Erişilebilirlik ayarlarını açın ve OnlySwitch’in bu kopyasına izin verin, ardından geri dönüp yeniden deneyin. Erişim zaten açık görünüyorsa sorun giderme için Özellikler ve İzinler bölümüne bakın."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося запустити перевірку та очищення екрана. Відкрийте параметри доступності та дозвольте доступ цій копії OnlySwitch, потім поверніться і повторіть спробу. Якщо доступ начебто вже ввімкнено, див. поради в розділі «Функції та дозволи»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "屏幕测试与清洁无法启动。请打开辅助功能设置，允许当前副本的 OnlySwitch，然后返回重试。如果权限看似已开启，请前往“功能与权限”查看排查说明。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "螢幕測試與清潔無法啟動。請開啟輔助使用設定，允許目前副本的 OnlySwitch，然後返回重試。如果權限看似已開啟，請前往「功能與權限」查看疑難排解說明。"
+          }
+        }
+      }
+    },
+    "Screen cleaning permission required" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je vyžadován přístup ke zpřístupnění"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zugriff auf Bedienungshilfen erforderlich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility access is required"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se requiere acceso de accesibilidad"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kailangan ang Accessibility access"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’accès à l’accessibilité est requis"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potreban je pristup pristupačnosti"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È richiesto l’accesso a Accessibilità"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティのアクセスが必要です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "손쉬운 사용 접근이 필요합니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toegang tot toegankelijkheid is vereist"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymagany jest dostęp do funkcji dostępności"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "É necessário acesso à Acessibilidade"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Требуется универсальный доступ"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vyžaduje sa prístup k funkciám prístupnosti"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelitaanka Helitaanka ayaa loo baahan yahay"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erişilebilirlik erişimi gerekli"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потрібен доступ до функцій доступності"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要辅助功能权限"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要輔助使用權限"
           }
         }
       }
@@ -114049,6 +115549,131 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "明天"
+          }
+        }
+      }
+    },
+    "System reports access available" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systém hlásí dostupný přístup"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System meldet Zugriff als verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System reports access available"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El sistema indica que el acceso está disponible"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniulat ng system na available ang access"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès signalé comme disponible par le système"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sustav prijavljuje da je pristup dostupan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il sistema segnala che l’accesso è disponibile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムはアクセス可能と報告"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템에서 접근 가능으로 보고함"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeem meldt dat toegang beschikbaar is"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System zgłasza dostęp jako dostępny"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O sistema informa que o acesso está disponível"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Система сообщает, что доступ разрешён"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systém hlási dostupný prístup"
+          }
+        },
+        "so" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nidaamku wuxuu sheegayaa in gelitaanku diyaar yahay"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem erişimin kullanılabilir olduğunu bildiriyor"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Система повідомляє, що доступ доступний"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统报告可访问"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統回報可存取"
           }
         }
       }

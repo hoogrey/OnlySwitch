@@ -142,7 +142,15 @@ extension SwitchType {
                     .runAppleScript()
                 }
             } else if controlType == .Button {
-                _ = try? await switchOperator.operateSwitch(isOn: true)
+                if self == .screenTest {
+                    do {
+                        try await switchOperator.operateSwitch(isOn: true)
+                    } catch {
+                        return
+                    }
+                } else {
+                    _ = try? await switchOperator.operateSwitch(isOn: true)
+                }
                 NotificationCenter.default.post(name: .changeSettings, object: nil)
                 _ = try? await displayNotificationCMD(title: barInfo().title.localized(),
                                                       content: "",

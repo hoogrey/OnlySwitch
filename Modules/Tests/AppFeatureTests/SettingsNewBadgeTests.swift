@@ -10,6 +10,10 @@ struct SettingsNewBadgeTests {
         return (try #require(UserDefaults(suiteName: suite)), suite)
     }
 
+    @Test func permissionsHealthIsAnnouncedAsNew() {
+        #expect(SettingsItem.newItems.contains(.PermissionsHealth))
+    }
+
     @Test func desktopPetIsAnnouncedAsNew() {
         #expect(SettingsItem.newItems.contains(.DesktopPet))
     }

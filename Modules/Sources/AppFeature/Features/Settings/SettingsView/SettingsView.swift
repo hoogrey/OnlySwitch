@@ -158,6 +158,10 @@ struct SettingsView: View {
             case .General:
                 GeneralView()
 
+            case .PermissionsHealth:
+                PermissionsHealthView(store: settingVM.permissionsHealthStore)
+                    .id(langManager.currentLang)
+
             case .Customize:
                 CustomizeView()
 

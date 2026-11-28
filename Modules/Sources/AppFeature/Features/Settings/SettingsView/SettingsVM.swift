@@ -23,6 +23,7 @@ import WebBrowser
 
 enum SettingsItem: String, CaseIterable {
     case General = "General"
+    case PermissionsHealth = "Features & Permissions"
     case Customize = "Customize"
     case Tabs = "Tabs"
     case DesktopPet = "Desktop Pet"
@@ -53,7 +54,7 @@ enum SettingsItem: String, CaseIterable {
 
     /// Recently added pages that show a "New" sidebar badge until first opened.
     /// Add every new Settings page here (see AGENTS.md).
-    static let newItems: Set<SettingsItem> = [.DesktopPet]
+    static let newItems: Set<SettingsItem> = [.DesktopPet, .PermissionsHealth]
 
     var titleLocalizationKey: String {
         switch self {
@@ -71,6 +72,7 @@ enum SettingsItem: String, CaseIterable {
     var systemImage: String {
         switch self {
         case .General: "gearshape"
+        case .PermissionsHealth: "checkmark.shield"
         case .Customize: "square.grid.2x2"
         case .Tabs: "rectangle.stack"
         case .DesktopPet: "pawprint"
@@ -104,6 +106,7 @@ enum SettingsItem: String, CaseIterable {
     var iconColor: Color {
         switch self {
         case .General: .gray
+        case .PermissionsHealth: .blue
         case .Customize: .blue
         case .Tabs: .indigo
         case .DesktopPet: .orange
@@ -150,6 +153,8 @@ class SettingsVM: ObservableObject {
 
     @Published private(set) var seenNewItems: Set<SettingsItem>
     private let newBadgeTracker = SettingsNewBadgeTracker()
+
+    lazy var permissionsHealthStore = Store(initialState: PermissionsHealthFeature.State()) { PermissionsHealthFeature() }
 
     var evolutionStore = Store(
         initialState: EvolutionReducer.State()) {
