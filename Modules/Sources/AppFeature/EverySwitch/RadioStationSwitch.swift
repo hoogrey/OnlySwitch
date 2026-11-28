@@ -51,10 +51,11 @@ final class RadioStationSwitch:SwitchProvider, @unchecked Sendable {
         self.playerItem.streamUrl = station.url!
         self.playerItem.id = station.id!
         self.playerItem.streamInfo = ""
-        //refresh player item
-        PlayerManager.shared.player.currentPlayerItem = self.playerItem
-//        PlayerManager.shared.player.play(stream: self.playerItem)
-//        PlayerManager.shared.player.stop()
+        let playerManager = PlayerManager.shared
+        // Keep playing or paused noise attached until a radio station actually starts.
+        if playerManager.player.currentPlayerItem?.type != .BackNoises {
+            playerManager.player.currentPlayerItem = playerItem
+        }
     }
 
     @MainActor

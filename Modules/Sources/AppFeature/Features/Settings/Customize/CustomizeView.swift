@@ -123,15 +123,9 @@ private struct CustomizeRowView: View {
                 Text(extraSettingsActionTitle)
             }
             .accessibilityLabel(Text(extraSettingsAccessibilityLabel))
-        } else if item.type == .radioStation || item.type == .backNoises {
+        } else if let playerType {
             Button {
-                preferencesvm.preferences.radioEnable.toggle()
-                if preferencesvm.preferences.radioEnable {
-                    PlayerManager.shared.player.setupRemoteCommandCenter()
-                } else {
-                    RadioStationSwitch.shared.playerItem.isPlaying = false
-                    PlayerManager.shared.player.clearCommandCenter()
-                }
+                preferencesvm.togglePlayerAvailability(playerType)
             } label: {
                 Text(extraSettingsActionTitle)
             }
@@ -139,10 +133,17 @@ private struct CustomizeRowView: View {
         }
     }
 
+    private var playerType: PlayerType? {
+        switch item.type {
+        case .radioStation: .Radio
+        case .backNoises: .BackNoises
+        default: nil
+        }
+    }
+
     private var extraSettingsActionTitle: String {
-        let isEnabled = item.type == .hideMenubarIcons
-            ? preferencesvm.preferences.menubarCollaspable
-            : preferencesvm.preferences.radioEnable
+        let isEnabled = playerType.map(preferencesvm.isPlayerEnabled)
+            ?? preferencesvm.preferences.menubarCollaspable
         return (isEnabled ? "Disable" : "Enable").localized()
     }
 

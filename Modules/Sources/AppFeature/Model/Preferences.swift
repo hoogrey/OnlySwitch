@@ -125,14 +125,7 @@ final class Preferences: @unchecked Sendable {
     @UserDefaultValue(key: UserDefaults.Key.allowNotificationTrack, defaultValue: false)
     var allNotificationTrack:Bool
 
-    @UserDefaultValue(key: UserDefaults.Key.radioEnable, defaultValue: true)
-    var radioEnable:Bool {
-        didSet {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                NotificationCenter.default.post(name: .changeSettings, object: nil)
-            }
-        }
-    }
+    var radioEnable: Bool { PlayerAvailabilityPreferences().isEnabled(.Radio) }
 
     @UserDefaultValue(key: UserDefaults.Key.radioStation, defaultValue: nil)
     var radioStationID:String?
@@ -208,6 +201,8 @@ final class Preferences: @unchecked Sendable {
     }
 
     // MARK: - BackNoises
+    var backNoisesEnable: Bool { PlayerAvailabilityPreferences().isEnabled(.BackNoises) }
+
     @UserDefaultValue(key: UserDefaults.Key.backNoisesTrack, defaultValue: "White Noises")
     var backNoisesTrack:String
 

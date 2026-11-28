@@ -88,15 +88,9 @@ struct OnlySwitchApp: App {
         .commands{
             CommandMenu("Switches Availability") {
                 Button(action: {
-                    preferencesvm.preferences.radioEnable = !preferences.radioEnable
-                    if preferences.radioEnable {
-                        PlayerManager.shared.player.setupRemoteCommandCenter()
-                    } else {
-                        RadioStationSwitch.shared.playerItem.isPlaying = false
-                        PlayerManager.shared.player.clearCommandCenter()
-                    }
+                    preferencesvm.togglePlayerAvailability(.Radio)
                 }, label: {
-                    if preferencesvm.preferences.radioEnable {
+                    if preferencesvm.isPlayerEnabled(.Radio) {
                         Text("Disable Player")
                     } else {
                         Text("Enable Player")

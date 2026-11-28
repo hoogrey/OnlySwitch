@@ -87,6 +87,7 @@ public extension UserDefaults {
         /// Comma-separated `SectionBar.Section` ids for the optional popover/Only Control tabs.
         public static let tabOrder = "tabOrderKey"
         //BackNoises
+        public static let backNoisesEnable = "backNoisesEnable"
         public static let backNoisesTrack = "backNoisesTrackKey"
         public static let automaticallyStopPlayNoiseTime = "automaticallyStopPlayNoiseTimeKey"
         //Keep Awake
@@ -172,7 +173,7 @@ public extension UserDefaults {
             orderWeight, onlyControlOrderWeight,
             soundMixerEnabled,
             systemMonitorPreferences, showSystemMonitorTab, showXcodeCleanerTab, showAppUninstallerTab, showScreenshotsTab, showSchedulesTab, showBrowserTab, showRadioTab, browserState, tabOrder,
-            backNoisesTrack, automaticallyStopPlayNoiseTime,
+            backNoisesEnable, backNoisesTrack, automaticallyStopPlayNoiseTime,
             autoStopKeepAwakeMode, autoStopKeepAwakeTime, autoStopKeepAwakeStartDate, autoStopKeepAwakeEndDate, autoStopKeepAwakeOnSleep, KeepAwakeKey,
             autoDimScreenTime, dimScreenPercent, syncExternalBrightness,
             displayBrightnessEnabled, externalDisplayDDCEnabled, showBrightnessTab, smoothBrightnessTransitions, combinedBrightnessDimming, allowZeroSoftwareBrightness, controlWithBrightnessKeys,

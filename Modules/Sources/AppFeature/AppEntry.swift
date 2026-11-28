@@ -9,6 +9,7 @@ public enum AppEntry {
         if CommandLine.arguments.contains(HostedAudioPlayer.helperArgument) {
             HostedAudioPlayer.runHelper()
         } else {
+            PlayerAvailabilityPreferences().migrateLegacyAvailability()
             CrashReportPrompt.beginMonitoring()
             OnlySwitchApp.main()
         }

@@ -123,9 +123,13 @@ extension AudioPlayer {
         MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyAlbumTitle] = info
     }
     
-    func clearCommandCenter() {
+    func clearNowPlaying() {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         MPNowPlayingInfoCenter.default().playbackState = .unknown
+    }
+
+    func clearCommandCenter() {
+        clearNowPlaying()
         let commandCenter = MPRemoteCommandCenter.shared()
         commandCenter.nextTrackCommand.isEnabled = false
         commandCenter.previousTrackCommand.isEnabled = false

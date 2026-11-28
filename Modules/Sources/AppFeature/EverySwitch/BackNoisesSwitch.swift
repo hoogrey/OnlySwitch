@@ -37,6 +37,7 @@ final class BackNoisesSwitch: SwitchProvider, @unchecked Sendable {
     @MainActor
     func operateSwitch(isOn: Bool) async throws {
         if isOn {
+            guard isVisible() else { return }
             let item = backNoisesTrackManager.currentBackNoisesItem
             if let url = item.url, url.isFileURL, FileManager.default.fileExists(atPath: url.path) {
                 item.isPlaying = true
@@ -53,7 +54,7 @@ final class BackNoisesSwitch: SwitchProvider, @unchecked Sendable {
     }
     
     func isVisible() -> Bool {
-        return Preferences.shared.radioEnable
+        Preferences.shared.backNoisesEnable
     }
 
     private func autoStopNoisesIfNeeded() {

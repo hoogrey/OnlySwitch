@@ -33,8 +33,10 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
 
     /// MediaPlayer may invoke handlers off the main thread. Only user intent crosses that boundary.
     func configureRemoteCommands() {
-        setupNowPlaying()
-        MPNowPlayingInfoCenter.default().playbackState = .paused
+        if currentPlayerItem == nil || availableRemotePlayerItem != nil {
+            setupNowPlaying()
+            MPNowPlayingInfoCenter.default().playbackState = .paused
+        }
         let center = MPRemoteCommandCenter.shared()
         center.playCommand.isEnabled = true
         center.playCommand.addTarget { [weak self] _ in
@@ -48,7 +50,7 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
         }
         center.togglePlayPauseCommand.addTarget { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self, let item = self.currentPlayerItem else { return }
+                guard let self, let item = self.availableRemotePlayerItem else { return }
                 self.setRemotePlaying(!item.isPlaying)
             }
             return .success
@@ -65,8 +67,14 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
         }
     }
 
+    private var availableRemotePlayerItem: CommonPlayerItem? {
+        guard let item = currentPlayerItem,
+              PlayerAvailabilityPreferences().isEnabled(item.type) else { return nil }
+        return item
+    }
+
     private func setRemotePlaying(_ playing: Bool) {
-        guard let item = currentPlayerItem else { return }
+        guard let item = availableRemotePlayerItem else { return }
         item.isPlaying = playing
         MPNowPlayingInfoCenter.default().playbackState = playing ? .playing : .paused
         NotificationCenter.default.post(name: .refreshSingleSwitchStatus,
@@ -74,7 +82,7 @@ final class HostedAudioPlayer: NSObject, @preconcurrency AudioPlayer {
     }
 
     private func changeRemoteTrack(next: Bool) {
-        guard let item = currentPlayerItem else { return }
+        guard let item = availableRemotePlayerItem else { return }
         if next { item.nextTrack() } else { item.previousTrack() }
         if item.type == .Radio, item.isPlaying { return }
         if item.type == .Radio {

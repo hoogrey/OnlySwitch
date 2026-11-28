@@ -258,6 +258,7 @@ extension GeneralVM {
 
     private func restore(_ backup: SettingsBackup, includeEvolution: Bool) throws {
         SettingsBackup.replace(backup.preferences, in: .standard, isAllowed: SettingsBackup.isExportablePreference)
+        PlayerAvailabilityPreferences().migrateLegacyAvailability()
         if let sharedDefaults = Self.sharedDefaults {
             SettingsBackup.replace(backup.sharedPreferences, in: sharedDefaults, isAllowed: SettingsBackup.isSharedPreference)
         }

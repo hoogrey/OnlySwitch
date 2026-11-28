@@ -11,6 +11,7 @@ import Foundation
 final class PlayerManager: @unchecked Sendable {
     static let shared = PlayerManager()
     var player:AudioPlayer!
+    private var remoteCommandsConfigured = false
     
     var soundWaveEffectDisplay:Bool{
         Preferences.shared.soundWaveEffectDisplay
@@ -19,10 +20,7 @@ final class PlayerManager: @unchecked Sendable {
     init() {
         
         self.player = MainActor.assumeIsolated { HostedAudioPlayer() }
-        
-        if Preferences.shared.radioEnable {
-            self.player.setupRemoteCommandCenter()
-        }
+        updateRemoteCommands()
         
         NotificationCenter.default.addObserver(forName: .soundWaveToggle, object: nil, queue: .main, using: { [self] _ in
             
@@ -30,13 +28,48 @@ final class PlayerManager: @unchecked Sendable {
             
             self.player.currentPlayerItem?.isPlaying = false
             self.player.clearCommandCenter()
+            self.remoteCommandsConfigured = false
             
             self.player = MainActor.assumeIsolated { HostedAudioPlayer() }
             self.player.currentPlayerItem = currentPlayerItem
             
-            if Preferences.shared.radioEnable {
-                self.player.setupRemoteCommandCenter()
-            }
+            self.updateRemoteCommands()
         })
+    }
+
+    @MainActor
+    func applyAvailabilityChange(for type: PlayerType, enabled: Bool) {
+        if enabled {
+            if remoteCommandsConfigured, let item = player.currentPlayerItem,
+               item.type == type, !item.isPlaying {
+                player.setupNowPlaying()
+                player.pauseCommandCenter()
+            }
+        } else {
+            let item: CommonPlayerItem
+            switch type {
+            case .Radio:
+                item = RadioStationSwitch.shared.playerItem
+            case .BackNoises:
+                item = BackNoisesTrackManager.shared.currentBackNoisesItem
+            }
+            // A noise download can have playback intent before it becomes the current item.
+            if item.isPlaying { item.isPlaying = false }
+            if player.currentPlayerItem === item {
+                player.clearNowPlaying()
+            }
+        }
+        updateRemoteCommands()
+    }
+
+    private func updateRemoteCommands() {
+        let shouldConfigure = Preferences.shared.radioEnable || Preferences.shared.backNoisesEnable
+        guard shouldConfigure != remoteCommandsConfigured else { return }
+        remoteCommandsConfigured = shouldConfigure
+        if shouldConfigure {
+            player.setupRemoteCommandCenter()
+        } else {
+            player.clearCommandCenter()
+        }
     }
 }
